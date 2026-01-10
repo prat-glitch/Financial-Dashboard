@@ -1,0 +1,150 @@
+@import "tailwindcss";
+
+@theme {
+  --font-sans: "Inter", "Plus Jakarta Sans", ui-sans-serif, system-ui, sans-serif;
+  --color-purple-mixture: #f3e8ff;
+  --color-white-pure: #ffffff;
+}
+
+@layer base {
+  html,
+  body {
+    @apply antialiased bg-[#fafafa] text-slate-900 font-sans;
+    font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+  }
+}
+
+@layer utilities {
+  /* Professional minimal card */
+  .glass-card {
+    @apply bg-white border border-slate-200/60 shadow-sm transition-all duration-300;
+  }
+
+  .dark .glass-card {
+    background: linear-gradient(135deg, rgba(30, 41, 59, 0.8) 0%, rgba(15, 23, 42, 0.9) 100%);
+    @apply border border-slate-700/50 shadow-none;
+  }
+
+  .btn-premium {
+    @apply bg-slate-900 hover:bg-slate-800 text-white shadow-sm transition-all duration-200 active:scale-[0.98];
+  }
+
+  .dark .btn-premium {
+    @apply bg-white hover:bg-slate-100 text-slate-900 shadow-none;
+  }
+
+  .card-premium {
+    @apply bg-white border border-slate-200/60 shadow-sm transition-all duration-300 hover:-translate-y-0.5 hover:shadow-lg hover:border-slate-300 cursor-pointer;
+  }
+
+  .dark .card-premium {
+    @apply bg-slate-800/50 border border-slate-700/50 shadow-none hover:bg-slate-800 hover:border-slate-600;
+  }
+
+  /* Animated shine button - subtle version */
+  @keyframes shine {
+    0% {
+      background-position: 0% 50%;
+    }
+    50% {
+      background-position: 100% 50%;
+    }
+    100% {
+      background-position: 0% 50%;
+    }
+  }
+
+  .button-shine {
+    background: conic-gradient(from 0deg, #0f172a, #334155, #0f172a, #334155, #0f172a);
+    background-size: 300% 300%;
+    animation: shine 4s ease-out infinite;
+  }
+
+  .dark .button-shine {
+    background: conic-gradient(from 0deg, #e2e8f0, #64748b, #e2e8f0, #64748b, #e2e8f0);
+    background-size: 300% 300%;
+    animation: shine 4s ease-out infinite;
+  }
+
+  /* Splash Screen Animations */
+  @keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+
+  @keyframes fadeOut {
+    from { opacity: 1; }
+    to { opacity: 0; }
+  }
+
+  @keyframes scaleIn {
+    from { 
+      opacity: 0; 
+      transform: scale(0.8);
+    }
+    to { 
+      opacity: 1; 
+      transform: scale(1);
+    }
+  }
+
+  @keyframes slideUp {
+    from { 
+      opacity: 0; 
+      transform: translateY(20px);
+    }
+    to { 
+      opacity: 1; 
+      transform: translateY(0);
+    }
+  }
+
+  @keyframes pulse-ring {
+    0% {
+      transform: scale(1);
+      opacity: 0.8;
+    }
+    50% {
+      transform: scale(1.5);
+      opacity: 0;
+    }
+    100% {
+      transform: scale(1);
+      opacity: 0;
+    }
+  }
+
+  @keyframes float {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-8px); }
+  }
+
+  .animate-fade-in {
+    animation: fadeIn 0.6s ease-out forwards;
+  }
+
+  .animate-fade-out {
+    animation: fadeOut 0.4s ease-in forwards;
+  }
+
+  .animate-scale-in {
+    animation: scaleIn 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  }
+
+  .animate-slide-up {
+    animation: slideUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  }
+
+  .animate-pulse-ring {
+    animation: pulse-ring 2s ease-out infinite;
+  }
+
+  .animate-float {
+    animation: float 3s ease-in-out infinite;
+  }
+
+  /* Page transition */
+  .page-enter {
+    animation: fadeIn 0.3s ease-out, slideUp 0.4s ease-out;
+  }
+}
