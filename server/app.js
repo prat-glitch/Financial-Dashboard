@@ -37,6 +37,9 @@ app.use('/api/categories', categoryRoutes);
 app.use('/api/data', dataRoutes);
 app.use('/api/budgets', budgetRoutes);
 
+app.use('/',(req, res) =>{
+    res.send('API is running....');
+})
 // --- Start Server ---
 const PORT = process.env.PORT || 3000;
 
