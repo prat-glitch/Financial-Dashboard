@@ -39,10 +39,26 @@ app.get('/', (req, res) => {
 // Health check endpoint
 app.get('/api/health', async (req, res) => {
     const mongoose = require('mongoose');
+    const dbState = mongoose.connection.readyState;
+    const states = {
+        0: 'Disconnected',
+        1: 'Connected',
+        2: 'Connecting',
+        3: 'Disconnecting'
+    };
+    
     res.json({
         status: 'OK',
-        database: mongoose.connection.readyState === 1 ? 'Connected' : 'Disconnected',
+        server: 'Running',
+        database: {
+            status: states[dbState] || 'Unknown',
+            readyState: dbState,
+            host: mongoose.connection.host || 'Not connected',
+            name: mongoose.connection.name || 'Not connected'
+        },
         environment: process.env.NODE_ENV || 'development',
+        mongodb_uri_present: !!process.env.MONGO_URI,
+        jwt_secret_present: !!process.env.JWT_SECRET,
         timestamp: new Date().toISOString()
     });
 });
