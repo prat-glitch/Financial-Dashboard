@@ -36,6 +36,17 @@ app.get('/', (req, res) => {
     });
 });
 
+// Health check endpoint
+app.get('/api/health', async (req, res) => {
+    const mongoose = require('mongoose');
+    res.json({
+        status: 'OK',
+        database: mongoose.connection.readyState === 1 ? 'Connected' : 'Disconnected',
+        environment: process.env.NODE_ENV || 'development',
+        timestamp: new Date().toISOString()
+    });
+});
+
 // --- API Routes ---
 app.use('/api/transactions', transactionRoutes);
 app.use('/api/users', userRoutes);
