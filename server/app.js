@@ -21,13 +21,19 @@ app.use(express.urlencoded({ extended: true }));
 // --- Connect to MongoDB ---
 connectdb();
 
-// --- EJS Setup (optional) ---
-app.set('view engine', 'ejs');
-app.set('views', './src/views');
-
 // --- Test Route ---
 app.get('/', (req, res) => {
-    res.render('index');
+    res.json({ 
+        message: 'Expense Tracker API is running',
+        status: 'OK',
+        endpoints: {
+            transactions: '/api/transactions',
+            users: '/api/users',
+            categories: '/api/categories',
+            data: '/api/data',
+            budgets: '/api/budgets'
+        }
+    });
 });
 
 // --- API Routes ---
@@ -37,9 +43,6 @@ app.use('/api/categories', categoryRoutes);
 app.use('/api/data', dataRoutes);
 app.use('/api/budgets', budgetRoutes);
 
-app.use('/',(req, res) =>{
-    res.send('API is running....');
-})
 // --- Start Server ---
 const PORT = process.env.PORT || 3000;
 
