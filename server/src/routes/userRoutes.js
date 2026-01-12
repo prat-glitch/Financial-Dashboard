@@ -1,21 +1,33 @@
 const userRoutes = require('express').Router();
+const { protect } = require('../middlewares/authMiddleware');
 const {
+    registerUser,
+    loginUser,
+    googleAuth,
+    verifyToken,
     getUserProfile,
     updateUserProfile,
     changePassword,
     deleteAccount
 } = require('../controllers/userController');
 
+// Authentication routes (public)
+userRoutes.post('/register', registerUser);
+userRoutes.post('/login', loginUser);
+userRoutes.post('/google-auth', googleAuth);
+userRoutes.get('/verify-token', verifyToken);
+
+// Protected routes - require authentication
 // Get user profile
-userRoutes.get('/:id', getUserProfile);
+userRoutes.get('/:id', protect, getUserProfile);
 
 // Update user profile
-userRoutes.put('/:id', updateUserProfile);
+userRoutes.put('/:id', protect, updateUserProfile);
 
 // Change password
-userRoutes.put('/:id/password', changePassword);
+userRoutes.put('/:id/password', protect, changePassword);
 
 // Soft delete account
-userRoutes.delete('/:id', deleteAccount);
+userRoutes.delete('/:id', protect, deleteAccount);
 
 module.exports = userRoutes;

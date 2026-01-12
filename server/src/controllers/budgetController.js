@@ -9,9 +9,11 @@ const getBudget = async (req, res) => {
         const currentDate = new Date();
         const targetMonth = parseInt(month) || currentDate.getMonth() + 1;
         const targetYear = parseInt(year) || currentDate.getFullYear();
+        const userId = req.user._id;
 
-        // Find budget for the month
+        // Find budget for the month for this user
         let budget = await Budget.findOne({ 
+            userid: userId,
             month: targetMonth, 
             year: targetYear 
         });
@@ -29,8 +31,11 @@ const getBudget = async (req, res) => {
             categories = dbCategories;
         }
         
-        // Also get categories that exist in transactions
-        const transactionCategoryNames = await Transaction.distinct('category', { type: 'expense' });
+        // Also get categories that exist in this user's transactions
+        const transactionCategoryNames = await Transaction.distinct('category', { 
+            type: 'expense',
+            userid: userId
+        });
         const existingCategoryNames = categories.map(c => c.name);
         
         // Add any transaction categories that aren't already in the list
@@ -58,13 +63,14 @@ const getBudget = async (req, res) => {
             ];
         }
 
-        // Get actual spending for the month
+        // Get actual spending for the month for this user
         const startDate = new Date(targetYear, targetMonth - 1, 1);
         const endDate = new Date(targetYear, targetMonth, 0, 23, 59, 59);
 
         const spending = await Transaction.aggregate([
             {
                 $match: {
+                    userid: userId,
                     type: 'expense',
                     date: { $gte: startDate, $lte: endDate }
                 }
@@ -77,10 +83,11 @@ const getBudget = async (req, res) => {
             }
         ]);
 
-        // Get total income for the month
+        // Get total income for the month for this user
         const incomeResult = await Transaction.aggregate([
             {
                 $match: {
+                    userid: userId,
                     type: 'income',
                     date: { $gte: startDate, $lte: endDate }
                 }
@@ -120,14 +127,15 @@ const getBudget = async (req, res) => {
 const saveBudget = async (req, res) => {
     try {
         const { month, year, totalBudget, categoryBudgets } = req.body;
+        const userId = req.user._id;
 
         // Validate
         if (!month || !year) {
             return res.status(400).json({ message: 'Month and year are required' });
         }
 
-        // Find existing budget or create new
-        let budget = await Budget.findOne({ month, year });
+        // Find existing budget or create new for this user
+        let budget = await Budget.findOne({ userid: userId, month, year });
 
         if (budget) {
             // Update existing
@@ -138,7 +146,7 @@ const saveBudget = async (req, res) => {
         } else {
             // Create new
             budget = new Budget({
-                userid: req.body.userid || '000000000000000000000000', // Default user for now
+                userid: userId,
                 month,
                 year,
                 totalBudget: totalBudget || 0,
@@ -160,17 +168,23 @@ const getSavingsAnalysis = async (req, res) => {
         const currentDate = new Date();
         const targetMonth = parseInt(month) || currentDate.getMonth() + 1;
         const targetYear = parseInt(year) || currentDate.getFullYear();
+        const userId = req.user._id;
 
-        // Get budget
-        const budget = await Budget.findOne({ month: targetMonth, year: targetYear });
+        // Get budget for this user
+        const budget = await Budget.findOne({ 
+            userid: userId,
+            month: targetMonth, 
+            year: targetYear 
+        });
 
-        // Get actual spending
+        // Get actual spending for this user
         const startDate = new Date(targetYear, targetMonth - 1, 1);
         const endDate = new Date(targetYear, targetMonth, 0, 23, 59, 59);
 
         const spending = await Transaction.aggregate([
             {
                 $match: {
+                    userid: userId,
                     type: 'expense',
                     date: { $gte: startDate, $lte: endDate }
                 }
@@ -183,10 +197,11 @@ const getSavingsAnalysis = async (req, res) => {
             }
         ]);
 
-        // Get income
+        // Get income for this user
         const incomeResult = await Transaction.aggregate([
             {
                 $match: {
+                    userid: userId,
                     type: 'income',
                     date: { $gte: startDate, $lte: endDate }
                 }
@@ -253,8 +268,10 @@ const getSavingsAnalysis = async (req, res) => {
 const deleteBudget = async (req, res) => {
     try {
         const { month, year } = req.params;
+        const userId = req.user._id;
         
         const budget = await Budget.findOneAndDelete({ 
+            userid: userId,
             month: parseInt(month), 
             year: parseInt(year) 
         });

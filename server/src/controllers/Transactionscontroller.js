@@ -1,11 +1,15 @@
 const transactionsmodel = require('../models/transactionsmodel');
 
-// Create a new transaction
+// Create a new transaction (requires authentication)
 exports.createTransaction = async (req, res) => {
     try {
         const { name, amount, type, category, date, description, method } = req.body;
 
+        // Get user ID from authenticated request
+        const userid = req.user._id;
+
         const newTransaction = new transactionsmodel({
+            userid,
             name: name || description,
             amount,
             type,
@@ -22,21 +26,30 @@ exports.createTransaction = async (req, res) => {
     }
 };
 
-// Get all transactions
+// Get all transactions for the authenticated user
 exports.getallTransactions = async (req, res) => {
     try {
-        const transactions = await transactionsmodel.find().sort({ date: -1 });
+        const userid = req.user._id;
+        const transactions = await transactionsmodel.find({ userid }).sort({ date: -1 });
         res.status(200).json({ transactions });
     } catch (error) {
         res.status(500).json({ message: 'Failed to fetch transactions', error: error.message });
     }
 };
 
-// Get transactions by user ID
+// Get transactions by user ID (admin or specific user)
 exports.getTransactionsByUser = async (req, res) => {
     try {
+        // Only allow users to view their own transactions
+        const userid = req.user._id;
+        const requestedUserId = req.params.userid;
+        
+        if (userid.toString() !== requestedUserId) {
+            return res.status(403).json({ message: 'Not authorized to view these transactions' });
+        }
+
         const transactions = await transactionsmodel.find({
-            userid: req.params.userid
+            userid: requestedUserId
         }).sort({ date: -1 });
         res.status(200).json({ transactions });
     } catch (error) {
@@ -47,7 +60,12 @@ exports.getTransactionsByUser = async (req, res) => {
 // Get single transaction by id
 exports.getTransactionById = async (req, res) => {
     try {
-        const transaction = await transactionsmodel.findById(req.params.id);
+        const userid = req.user._id;
+        const transaction = await transactionsmodel.findOne({ 
+            _id: req.params.id,
+            userid 
+        });
+        
         if (!transaction) {
             return res.status(404).json({ message: 'Transaction not found' });
         }
@@ -60,14 +78,24 @@ exports.getTransactionById = async (req, res) => {
 // Update transaction
 exports.updateTransaction = async (req, res) => {
     try {
+        const userid = req.user._id;
+        
+        // First check if transaction belongs to user
+        const existingTransaction = await transactionsmodel.findOne({
+            _id: req.params.id,
+            userid
+        });
+        
+        if (!existingTransaction) {
+            return res.status(404).json({ message: 'Transaction not found' });
+        }
+
         const transaction = await transactionsmodel.findByIdAndUpdate(
             req.params.id,
             req.body,
             { new: true }
         );
-        if (!transaction) {
-            return res.status(404).json({ message: 'Transaction not found' });
-        }
+        
         res.status(200).json({ message: 'Transaction updated', transaction });
     } catch (error) {
         res.status(500).json({ message: 'Failed to update transaction', error: error.message });
@@ -77,7 +105,13 @@ exports.updateTransaction = async (req, res) => {
 // Delete transaction
 exports.deleteTransaction = async (req, res) => {
     try {
-        const transaction = await transactionsmodel.findByIdAndDelete(req.params.id);
+        const userid = req.user._id;
+        
+        const transaction = await transactionsmodel.findOneAndDelete({
+            _id: req.params.id,
+            userid
+        });
+        
         if (!transaction) {
             return res.status(404).json({ message: 'Transaction not found' });
         }
@@ -87,10 +121,11 @@ exports.deleteTransaction = async (req, res) => {
     }
 };
 
-// Get transaction statistics
+// Get transaction statistics for the authenticated user
 exports.getTransactionStats = async (req, res) => {
     try {
-        const transactions = await transactionsmodel.find();
+        const userid = req.user._id;
+        const transactions = await transactionsmodel.find({ userid });
         
         const totalIncome = transactions
             .filter(t => t.type === 'income')

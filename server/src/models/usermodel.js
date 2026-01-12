@@ -3,9 +3,11 @@ const mongoose = require('mongoose');
 const userschema = new mongoose.Schema({
     name: { type: String, required: true },
     email: { type: String, required: true, unique: true },
-    Password: { type: String, required: true },
+    Password: { type: String, required: function() { return !this.googleId; } },
     phone: { type: String },
     avatar: { type: String },
+    googleId: { type: String, sparse: true },
+    authProvider: { type: String, default: 'email', enum: ['email', 'google'] },
     preferences: {
         currency: { type: String, default: '₹', enum: ['₹', '$', '€', '£'] },
         monthlyBudget: { type: Number, default: 0 },

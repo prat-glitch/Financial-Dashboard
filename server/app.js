@@ -40,6 +40,12 @@ app.use('/api/budgets', budgetRoutes);
 // --- Start Server ---
 const PORT = process.env.PORT || 3000;
 
-app.listen(PORT, () => {
-    console.log(`Server running on port ${PORT}`);
-});
+// Only listen when not in Vercel environment
+if (process.env.NODE_ENV !== 'production') {
+    app.listen(PORT, () => {
+        console.log(`Server running on port ${PORT}`);
+    });
+}
+
+// Export for Vercel
+module.exports = app;
