@@ -2,6 +2,8 @@ import React, { useState } from "react";
 import { Mail, Lock, Eye, EyeOff, ArrowRight, User } from "lucide-react";
 import { useAuth } from "../context/AuthContext.jsx";
 
+const API_BASE = import.meta.env.VITE_API_URL || "http://localhost:3000/api";
+
 const Auth = ({ onLogin, isDarkMode }) => {
   const { login } = useAuth();
   const [isLogin, setIsLogin] = useState(true);
@@ -38,7 +40,6 @@ const Auth = ({ onLogin, isDarkMode }) => {
         ? { email: form.email, password: form.password }
         : { name: form.name, email: form.email, password: form.password };
 
-      const API_BASE = import.meta.env.VITE_API_URL || "http://localhost:3000/api";
       const response = await fetch(`${API_BASE.replace('/api', '')}${endpoint}`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -80,8 +81,7 @@ const Auth = ({ onLogin, isDarkMode }) => {
       };
 
       const API_BASE = import.meta.env.VITE_API_URL || "http://localhost:3000/api";
-      const response = await fetch(`${API_BASE}/users/google-auth`, {
-        method: "POST",
+      const od: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(mockGoogleUser)
       });
