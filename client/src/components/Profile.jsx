@@ -1,13 +1,7 @@
 import React, { useState } from "react";
 import { Link } from "react-router-dom";
 import {
-    Home,
     List,
-    CreditCard,
-    Target,
-    PieChart,
-    Settings,
-    LogOut,
     User,
     Wallet,
     Shield,
@@ -23,21 +17,22 @@ import {
     Sun,
     Moon,
     Bell,
-    ChevronRight,
     Save,
     Eye,
     EyeOff,
 } from "lucide-react";
 import { useTheme } from "../context/ThemeContext.jsx";
 import { useUser } from "../context/UserContext.jsx";
+import Sidebar, { MobileHeader, MobileOverlay } from "./Sidebar.jsx";
 
 const Profile = () => {
     const { isDarkMode, toggleTheme } = useTheme();
-    const { user, updateUser } = useUser();
+    const { user, updateUser, saveUserToBackend } = useUser();
     const [activeTab, setActiveTab] = useState("user");
     const [showPassword, setShowPassword] = useState(false);
     const [showNewPassword, setShowNewPassword] = useState(false);
     const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+    const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
     // Local User Info State for editing
     const [localUserInfo, setLocalUserInfo] = useState({ ...user });
@@ -114,14 +109,33 @@ const Profile = () => {
         { id: "appearance", label: "App Preferences", icon: <Palette size={18} /> },
     ];
 
-    const handleSaveUserInfo = () => {
+    const handleSaveUserInfo = async () => {
+        // Update local state first
         updateUser(localUserInfo);
-        alert("Profile saved successfully!");
+        
+        // Save to backend database
+        const success = await saveUserToBackend({
+            name: localUserInfo.name,
+            phone: localUserInfo.phone,
+            avatar: localUserInfo.avatar
+        });
+        
+        if (success) {
+            alert("Profile saved successfully!");
+        } else {
+            alert("Profile saved locally. Backend sync may have failed.");
+        }
     };
 
-    const handleSavePreferences = () => {
-        // API call would go here
-        alert("Preferences saved successfully!");
+    const handleSavePreferences = async () => {
+        // Save preferences to backend
+        const success = await saveUserToBackend({ preferences });
+        
+        if (success) {
+            alert("Preferences saved successfully!");
+        } else {
+            alert("Preferences saved locally. Backend sync may have failed.");
+        }
     };
 
     const handleAddCategory = () => {
@@ -193,55 +207,24 @@ const Profile = () => {
     };
 
     return (
-        <div className={`w-full min-h-screen flex ${isDarkMode ? 'dark bg-gray-900' : 'bg-white'}`}>
+        <div className={`w-full min-h-screen flex ${isDarkMode ? 'dark bg-slate-900' : 'bg-[#f8f7fc]'}`}>
+            {/* MOBILE HEADER */}
+            <MobileHeader isMobileMenuOpen={isMobileMenuOpen} setIsMobileMenuOpen={setIsMobileMenuOpen} />
+
             {/* SIDEBAR */}
-            <aside className={`w-64 border-r transition-all duration-500 flex flex-col p-6 h-screen sticky top-0 ${isDarkMode
-                ? 'bg-purple-950 border-purple-800 text-white'
-                : 'bg-white border-indigo-50 text-indigo-900'}`}>
+            <Sidebar isMobileMenuOpen={isMobileMenuOpen} setIsMobileMenuOpen={setIsMobileMenuOpen} />
 
-                <h1 className="text-2xl font-black mb-10 flex items-center gap-2">
-                    <span className={`w-8 h-8 flex items-center justify-center rounded-lg shadow-sm font-black italic ${isDarkMode ? 'bg-white text-purple-700' : 'bg-indigo-600 text-white'}`}>
-                        ₹
-                    </span>
-                    <span className="tracking-tight italic text-inherit">ExpenseTrack</span>
-                </h1>
-
-                <nav className="flex flex-col space-y-6">
-                    <ul className="space-y-1">
-                        <li className={`flex items-center gap-3 px-4 py-2.5 rounded-xl font-bold text-sm cursor-pointer transition-all hover:translate-x-1 ${isDarkMode ? 'text-purple-200 hover:text-white hover:bg-white/5' : 'text-indigo-900 hover:bg-indigo-50'}`}>
-                            <Home size={18} />
-                            <Link to="/" className="flex-1">Dashboard</Link>
-                        </li>
-                        <li className={`flex items-center gap-3 px-4 py-2.5 rounded-xl font-bold text-sm cursor-pointer transition-all hover:translate-x-1 ${isDarkMode ? 'text-purple-200 hover:text-white hover:bg-white/5' : 'text-indigo-900 hover:bg-indigo-50'}`}>
-                            <List size={18} />
-                            <Link to="/transactions" className="flex-1">Transactions</Link>
-                        </li>
-                    </ul>
-
-                    <div className="pt-6 border-t border-purple-800/20 dark:border-purple-800/50">
-                        <p className={`text-[10px] font-black uppercase tracking-widest mb-3 ${isDarkMode ? 'text-purple-400' : 'text-indigo-400'}`}>Management</p>
-                        <ul className="space-y-1">
-                            <li className={`flex items-center gap-3 px-4 py-2.5 rounded-xl font-bold text-sm cursor-pointer transition-all ${isDarkMode ? 'bg-white text-purple-700' : 'bg-indigo-600 text-white shadow-lg'}`}>
-                                <Settings size={18} />
-                                Settings
-                            </li>
-                            <li className={`flex items-center gap-3 px-4 py-2.5 rounded-xl font-bold text-sm cursor-pointer transition-all hover:translate-x-1 ${isDarkMode ? 'text-rose-400 hover:bg-rose-500/10' : 'text-rose-600 hover:bg-rose-50'}`}>
-                                <LogOut size={18} />
-                                Logout
-                            </li>
-                        </ul>
-                    </div>
-                </nav>
-            </aside>
+            {/* Mobile Overlay */}
+            <MobileOverlay isMobileMenuOpen={isMobileMenuOpen} setIsMobileMenuOpen={setIsMobileMenuOpen} />
 
             {/* MAIN CONTENT */}
-            <main className="flex-1 p-8">
+            <main className="flex-1 md:ml-64 p-8">
                 <div className="max-w-5xl mx-auto">
                     {/* Header */}
                     <div className="mb-10">
-                        <p className={`text-[10px] font-black uppercase tracking-[0.4em] ${isDarkMode ? 'text-purple-400' : 'text-indigo-500'}`}>Configuration Hub</p>
-                        <h1 className={`text-5xl font-black tracking-tighter ${isDarkMode ? 'text-white' : 'text-indigo-950'}`}>Settings</h1>
-                        <p className={`mt-2 text-sm font-bold max-w-lg leading-relaxed ${isDarkMode ? 'text-purple-300/40' : 'text-zinc-400'}`}>Fine-tune your workspace environment and operational protocols.</p>
+                        <p className={`text-[10px] font-black uppercase tracking-[0.4em] ${isDarkMode ? 'text-violet-400' : 'text-violet-500'}`}>Configuration Hub</p>
+                        <h1 className={`text-5xl font-black tracking-tighter ${isDarkMode ? 'text-white' : 'text-slate-800'}`}>Settings</h1>
+                        <p className={`mt-2 text-sm font-bold max-w-lg leading-relaxed ${isDarkMode ? 'text-slate-400' : 'text-slate-500'}`}>Fine-tune your workspace environment and operational protocols.</p>
                     </div>
 
                     {/* Tabs Navigation */}
@@ -293,14 +276,51 @@ const Profile = () => {
                                             id="avatar-upload"
                                             accept="image/*"
                                             className="hidden"
-                                            onChange={(e) => {
+                                            onChange={async (e) => {
                                                 const file = e.target.files?.[0];
                                                 if (file) {
+                                                    // Compress image if too large (max 500KB for database storage)
+                                                    const maxSize = 500 * 1024; // 500KB
+                                                    
                                                     const reader = new FileReader();
-                                                    reader.onloadend = () => {
-                                                        const base64String = reader.result;
-                                                        setLocalUserInfo({ ...localUserInfo, avatar: base64String });
-                                                        updateUser({ avatar: base64String });
+                                                    reader.onloadend = async () => {
+                                                        let base64String = reader.result;
+                                                        
+                                                        // If image is too large, compress it
+                                                        if (file.size > maxSize) {
+                                                            const img = new Image();
+                                                            img.onload = async () => {
+                                                                const canvas = document.createElement('canvas');
+                                                                const maxDim = 300; // Max dimension 300px
+                                                                let width = img.width;
+                                                                let height = img.height;
+                                                                
+                                                                if (width > height && width > maxDim) {
+                                                                    height = (height * maxDim) / width;
+                                                                    width = maxDim;
+                                                                } else if (height > maxDim) {
+                                                                    width = (width * maxDim) / height;
+                                                                    height = maxDim;
+                                                                }
+                                                                
+                                                                canvas.width = width;
+                                                                canvas.height = height;
+                                                                const ctx = canvas.getContext('2d');
+                                                                ctx.drawImage(img, 0, 0, width, height);
+                                                                
+                                                                base64String = canvas.toDataURL('image/jpeg', 0.7);
+                                                                setLocalUserInfo({ ...localUserInfo, avatar: base64String });
+                                                                updateUser({ avatar: base64String });
+                                                                // Auto-save to backend
+                                                                await saveUserToBackend({ avatar: base64String });
+                                                            };
+                                                            img.src = base64String;
+                                                        } else {
+                                                            setLocalUserInfo({ ...localUserInfo, avatar: base64String });
+                                                            updateUser({ avatar: base64String });
+                                                            // Auto-save to backend
+                                                            await saveUserToBackend({ avatar: base64String });
+                                                        }
                                                     };
                                                     reader.readAsDataURL(file);
                                                 }

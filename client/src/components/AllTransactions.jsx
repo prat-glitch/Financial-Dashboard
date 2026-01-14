@@ -2,15 +2,25 @@ import React, { useState, useRef, useEffect } from "react";
 import {
   Search, Filter, ChevronDown, MoreHorizontal, Plus, Download, Trash2, Edit3,
   ShoppingCart, Car, CreditCard, Utensils, Briefcase, Plane,
-  Home, List, Target, LogOut, Settings, Sun, Moon, Bell,
+  List, Target, Sun, Moon, Bell,
   Calendar, X, TrendingUp, ArrowUpRight, ArrowDownLeft,
   Zap, Film, Heart, Gift, Gamepad2, Wifi, Phone, CalendarDays
 } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useTheme } from "../context/ThemeContext.jsx";
 import { useUser } from "../context/UserContext.jsx";
+import Sidebar, { MobileHeader, MobileOverlay } from "./Sidebar.jsx";
 
-const API_BASE = "http://localhost:3000/api";
+const API_BASE = import.meta.env.VITE_API_URL || "http://localhost:3000/api";
+
+// Helper to get auth headers
+const getAuthHeaders = () => {
+  const token = localStorage.getItem('expense_track_token');
+  return {
+    'Content-Type': 'application/json',
+    ...(token && { 'Authorization': `Bearer ${token}` })
+  };
+};
 
 // Category configurations
 const categoryConfig = {
@@ -136,7 +146,12 @@ const AllTransactions = () => {
   const fetchTransactions = async () => {
     try {
       setLoading(true);
-      const response = await fetch(`${API_BASE}/transactions`);
+      const response = await fetch(`${API_BASE}/transactions`, {
+        headers: getAuthHeaders()
+      });
+      if (!response.ok) {
+        throw new Error('Failed to fetch transactions');
+      }
       const data = await response.json();
       setTransactions(data.transactions || []);
     } catch (error) {
@@ -273,7 +288,7 @@ const AllTransactions = () => {
       
       const response = await fetch(url, {
         method,
-        headers: { 'Content-Type': 'application/json' },
+        headers: getAuthHeaders(),
         body: JSON.stringify(form)
       });
       
@@ -290,7 +305,10 @@ const AllTransactions = () => {
   const handleDelete = async (id) => {
     if (!window.confirm("Delete this transaction?")) return;
     try {
-      await fetch(`${API_BASE}/transactions/${id}`, { method: 'DELETE' });
+      await fetch(`${API_BASE}/transactions/${id}`, { 
+        method: 'DELETE',
+        headers: getAuthHeaders()
+      });
       await fetchTransactions();
     } catch (error) {
       console.error("Failed to delete:", error);
@@ -326,96 +344,39 @@ const AllTransactions = () => {
   };
 
   return (
-    <div className={`w-full min-h-screen flex flex-col md:flex-row transition-colors duration-300 ${isDarkMode ? 'bg-slate-900' : 'bg-[#fafafa]'}`}>
+    <div className={`w-full min-h-screen flex flex-col md:flex-row transition-colors duration-300 ${isDarkMode ? 'bg-slate-900' : 'bg-[#f8f7fc]'}`}>
 
       {/* MOBILE HEADER */}
-      <div className={`md:hidden flex items-center justify-between p-4 border-b sticky top-0 z-40 ${isDarkMode ? 'bg-slate-900/95 border-slate-800 backdrop-blur-xl' : 'bg-white border-slate-200/60'}`}>
-        <h1 className="flex items-center gap-2 font-semibold">
-          <div className="w-8 h-8 flex items-center justify-center rounded-lg bg-slate-900 text-white text-sm font-bold">₹</div>
-          <span className={`tracking-tight ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>ExpenseTrack</span>
-        </h1>
-        <button onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)} className={`p-2 rounded-lg transition-colors ${isDarkMode ? 'bg-slate-800 text-slate-400' : 'bg-slate-100 text-slate-600'}`}>
-          <List size={20} />
-        </button>
-      </div>
+      <MobileHeader isMobileMenuOpen={isMobileMenuOpen} setIsMobileMenuOpen={setIsMobileMenuOpen} />
 
       {/* SIDEBAR */}
-      <aside className={`fixed inset-y-0 left-0 z-50 w-64 border-r transition-all duration-300 md:relative md:translate-x-0 ${isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full'} ${isDarkMode
-        ? 'bg-slate-900 border-slate-800'
-        : 'bg-white border-slate-200/60'}`}>
+      <Sidebar isMobileMenuOpen={isMobileMenuOpen} setIsMobileMenuOpen={setIsMobileMenuOpen} />
 
-        <div className="p-5 flex flex-col h-full">
-          <h1 className="hidden md:flex text-lg font-semibold mb-8 items-center gap-2.5">
-            <div className={`w-9 h-9 flex items-center justify-center rounded-lg font-bold ${isDarkMode ? 'bg-slate-800 text-white' : 'bg-slate-900 text-white'}`}>
-              ₹
-            </div>
-            <span className={`tracking-tight ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>ExpenseTrack</span>
-          </h1>
-
-          <nav className="flex flex-col flex-1">
-            <ul className="space-y-1">
-              <li onClick={() => setIsMobileMenuOpen(false)}>
-                <Link to="/" className={`flex items-center gap-2.5 px-3 py-2.5 rounded-lg font-medium text-sm transition-colors ${isDarkMode ? 'text-slate-400 hover:text-white hover:bg-slate-800' : 'text-slate-500 hover:text-slate-900 hover:bg-slate-100'}`}>
-                  <Home size={18} />
-                  Dashboard
-                </Link>
-              </li>
-              <li className={`flex items-center gap-2.5 px-3 py-2.5 rounded-lg font-medium text-sm ${isDarkMode ? 'bg-slate-800 text-white' : 'bg-slate-900 text-white'}`}>
-                <List size={18} />
-                Transactions
-              </li>
-              <li>
-                <div className={`flex items-center gap-2.5 px-3 py-2.5 rounded-lg font-medium text-sm cursor-pointer transition-colors ${isDarkMode ? 'text-slate-400 hover:text-white hover:bg-slate-800' : 'text-slate-500 hover:text-slate-900 hover:bg-slate-100'}`}>
-                  <Target size={18} />
-                  Goals
-                </div>
-              </li>
-            </ul>
-
-            <div className={`pt-5 border-t mt-auto ${isDarkMode ? 'border-slate-800' : 'border-slate-200/60'}`}>
-              <ul className="space-y-1">
-                <li onClick={() => setIsMobileMenuOpen(false)}>
-                  <Link to="/profile" className={`flex items-center gap-2.5 px-3 py-2.5 rounded-lg font-medium text-sm transition-colors ${isDarkMode ? 'text-slate-400 hover:text-white hover:bg-slate-800' : 'text-slate-500 hover:text-slate-900 hover:bg-slate-100'}`}>
-                    <Settings size={18} />
-                    Settings
-                  </Link>
-                </li>
-                <li className={`flex items-center gap-2.5 px-3 py-2.5 rounded-lg font-medium text-sm cursor-pointer transition-colors ${isDarkMode ? 'text-rose-400 hover:bg-rose-500/10' : 'text-rose-500 hover:bg-rose-50'}`}>
-                  <LogOut size={18} />
-                  Logout
-                </li>
-              </ul>
-            </div>
-          </nav>
-        </div>
-      </aside>
-
-      {isMobileMenuOpen && (
-        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-40 md:hidden" onClick={() => setIsMobileMenuOpen(false)} />
-      )}
+      {/* Mobile Overlay */}
+      <MobileOverlay isMobileMenuOpen={isMobileMenuOpen} setIsMobileMenuOpen={setIsMobileMenuOpen} />
 
       {/* MAIN CONTENT */}
-      <main className="flex-1 min-h-screen">
+      <main className="flex-1 md:ml-64 min-h-screen">
         {/* Top Header */}
-        <div className={`px-5 md:px-6 py-4 flex items-center justify-between border-b sticky top-0 z-30 ${isDarkMode ? 'bg-slate-900/90 border-slate-800 backdrop-blur-xl' : 'bg-white/95 border-slate-200/60'}`}>
+        <div className={`px-5 md:px-6 py-4 flex items-center justify-between border-b sticky top-0 z-30 ${isDarkMode ? 'bg-slate-900/90 border-slate-800 backdrop-blur-xl' : 'bg-white/95 border-violet-100'}`}>
           <div />
           <div className="flex items-center gap-3">
             <button
               onClick={toggleTheme}
-              className={`w-9 h-9 rounded-lg flex items-center justify-center transition-colors ${isDarkMode ? 'bg-slate-800 text-amber-400 hover:bg-slate-700' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'}`}
+              className={`w-9 h-9 rounded-lg flex items-center justify-center transition-colors ${isDarkMode ? 'bg-slate-800 text-amber-400 hover:bg-slate-700' : 'bg-violet-100 text-slate-600 hover:bg-violet-200'}`}
             >
               {isDarkMode ? <Sun size={18} /> : <Moon size={18} />}
             </button>
             <div className="relative cursor-pointer">
               <Bell size={20} className={isDarkMode ? 'text-slate-400' : 'text-slate-500'} />
-              <span className="absolute -top-1 -right-1 w-2 h-2 bg-rose-500 rounded-full" />
+              <span className="absolute -top-1 -right-1 w-2 h-2 bg-violet-500 rounded-full" />
             </div>
             <Link to="/profile">
-              <div className={`w-9 h-9 rounded-lg overflow-hidden ring-2 ${isDarkMode ? 'ring-slate-700' : 'ring-slate-200'}`}>
+              <div className={`w-9 h-9 rounded-lg overflow-hidden ring-2 ${isDarkMode ? 'ring-slate-700' : 'ring-violet-200'}`}>
                 {user?.avatar ? (
                   <img src={user.avatar} className="w-full h-full object-cover" alt="User" />
                 ) : (
-                  <div className="w-full h-full bg-slate-900 flex items-center justify-center text-white text-xs font-medium">
+                  <div className="w-full h-full bg-linear-to-br from-violet-400 to-purple-500 flex items-center justify-center text-white text-xs font-medium">
                     {getInitials(user?.name || "User")}
                   </div>
                 )}

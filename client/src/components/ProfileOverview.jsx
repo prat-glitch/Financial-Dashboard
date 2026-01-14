@@ -1,13 +1,9 @@
 import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import {
-    Home,
     List,
     CreditCard,
-    Target,
     PieChart,
-    Settings,
-    LogOut,
     User,
     Mail,
     Phone,
@@ -23,10 +19,12 @@ import {
 
 import { useTheme } from "../context/ThemeContext.jsx";
 import { useUser } from "../context/UserContext.jsx";
+import Sidebar, { MobileHeader, MobileOverlay } from "./Sidebar.jsx";
 
 const ProfileOverview = () => {
     const { isDarkMode } = useTheme();
     const { user } = useUser();
+    const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
     // Member since is not in context yet, we can add it or hardcode for now
     // But name, email, phone, avatar should come from context
@@ -83,49 +81,18 @@ const ProfileOverview = () => {
     ];
 
     return (
-        <div className={`w-full min-h-screen flex ${isDarkMode ? 'dark bg-gray-900' : 'bg-white'}`}>
+        <div className={`w-full min-h-screen flex ${isDarkMode ? 'dark bg-slate-900' : 'bg-[#f8f7fc]'}`}>
+            {/* MOBILE HEADER */}
+            <MobileHeader isMobileMenuOpen={isMobileMenuOpen} setIsMobileMenuOpen={setIsMobileMenuOpen} />
+
             {/* SIDEBAR */}
-            <aside className={`w-64 border-r transition-all duration-500 flex flex-col p-6 h-screen sticky top-0 ${isDarkMode
-                ? 'bg-purple-950 border-purple-800 text-white'
-                : 'bg-white border-indigo-50 text-indigo-900'}`}>
+            <Sidebar isMobileMenuOpen={isMobileMenuOpen} setIsMobileMenuOpen={setIsMobileMenuOpen} />
 
-                <h1 className="text-2xl font-black mb-10 flex items-center gap-2">
-                    <span className={`w-8 h-8 flex items-center justify-center rounded-lg shadow-sm font-black italic ${isDarkMode ? 'bg-white text-purple-700' : 'bg-indigo-600 text-white'}`}>
-                        ₹
-                    </span>
-                    <span className="tracking-tight italic text-inherit">ExpenseTrack</span>
-                </h1>
-
-                <nav className="flex flex-col space-y-6">
-                    <ul className="space-y-1">
-                        <li className={`flex items-center gap-3 px-4 py-2.5 rounded-xl font-bold text-sm cursor-pointer transition-all hover:translate-x-1 ${isDarkMode ? 'text-purple-200 hover:text-white hover:bg-white/5' : 'text-indigo-900 hover:bg-indigo-50'}`}>
-                            <Home size={18} />
-                            <Link to="/" className="flex-1">Dashboard</Link>
-                        </li>
-                        <li className={`flex items-center gap-3 px-4 py-2.5 rounded-xl font-bold text-sm cursor-pointer transition-all hover:translate-x-1 ${isDarkMode ? 'text-purple-200 hover:text-white hover:bg-white/5' : 'text-indigo-900 hover:bg-indigo-50'}`}>
-                            <List size={18} />
-                            <Link to="/transactions" className="flex-1">Transactions</Link>
-                        </li>
-                    </ul>
-
-                    <div className="pt-6 border-t border-purple-800/20 dark:border-purple-800/50">
-                        <p className={`text-[10px] font-black uppercase tracking-widest mb-3 ${isDarkMode ? 'text-purple-400' : 'text-indigo-400'}`}>Management</p>
-                        <ul className="space-y-1">
-                            <li className={`flex items-center gap-3 px-4 py-2.5 rounded-xl font-bold text-sm cursor-pointer transition-all hover:translate-x-1 ${isDarkMode ? 'text-purple-200 hover:text-white hover:bg-white/5' : 'text-indigo-900 hover:bg-indigo-50'}`}>
-                                <Settings size={18} />
-                                <Link to="/settings" className="flex-1">Settings</Link>
-                            </li>
-                            <li className={`flex items-center gap-3 px-4 py-2.5 rounded-xl font-bold text-sm cursor-pointer transition-all hover:translate-x-1 ${isDarkMode ? 'text-rose-400 hover:bg-rose-500/10' : 'text-rose-600 hover:bg-rose-50'}`}>
-                                <LogOut size={18} />
-                                Logout
-                            </li>
-                        </ul>
-                    </div>
-                </nav>
-            </aside>
+            {/* Mobile Overlay */}
+            <MobileOverlay isMobileMenuOpen={isMobileMenuOpen} setIsMobileMenuOpen={setIsMobileMenuOpen} />
 
             {/* MAIN CONTENT */}
-            <main className="flex-1 p-8">
+            <main className="flex-1 md:ml-64 p-8">
                 <div className="max-w-4xl mx-auto">
                     {/* Profile Header Card */}
                     <div className={`p-8 rounded-2xl mb-8 border ${isDarkMode ? 'bg-purple-900 border-purple-800 text-white' : 'bg-indigo-600 border-indigo-500 text-white shadow-lg shadow-indigo-500/10'}`}>

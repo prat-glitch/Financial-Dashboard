@@ -1,16 +1,27 @@
 import React, { useState, useEffect } from "react";
 import { Link, useLocation } from "react-router-dom";
 import {
-  Home, List, Target, Settings, LogOut, Sun, Moon, Save,
+  Save, Target,
   PiggyBank, TrendingUp, AlertCircle, CheckCircle, Wallet,
   ShoppingCart, Car, Utensils, Briefcase, Plane, Zap, Film, Heart, Gift,
-  Gamepad2, Wifi, Phone, CreditCard, Menu, X, ChevronLeft, ChevronRight,
-  Plus, Minus, RefreshCw, Sparkles, ChevronDown, Trash2, Edit3
+  Gamepad2, Wifi, Phone, CreditCard, ChevronLeft, ChevronRight,
+  Plus, Minus, RefreshCw, Sparkles, ChevronDown, Trash2, DollarSign,
+  BarChart3, ArrowUpRight, ArrowDownRight, Calendar, Layers, Edit3
 } from "lucide-react";
 import { useTheme } from "../context/ThemeContext.jsx";
 import { useUser } from "../context/UserContext.jsx";
+import Sidebar, { MobileHeader, MobileOverlay } from "./Sidebar.jsx";
 
-const API_BASE = "http://localhost:3000/api";
+const API_BASE = import.meta.env.VITE_API_URL || "http://localhost:3000/api";
+
+// Helper to get auth headers
+const getAuthHeaders = () => {
+  const token = localStorage.getItem('expense_track_token');
+  return {
+    'Content-Type': 'application/json',
+    ...(token && { 'Authorization': `Bearer ${token}` })
+  };
+};
 
 // Category icons mapping
 const categoryIcons = {
@@ -268,16 +279,43 @@ const Budget = () => {
       setLoading(true);
       
       // Fetch budget and categories
-      const budgetRes = await fetch(`${API_BASE}/budgets?month=${selectedMonth}&year=${selectedYear}`);
+      const budgetRes = await fetch(`${API_BASE}/budgets?month=${selectedMonth}&year=${selectedYear}`, {
+        headers: getAuthHeaders()
+      });
       const budgetData = await budgetRes.json();
       
       // Fetch savings analysis
-      const analysisRes = await fetch(`${API_BASE}/budgets/analysis?month=${selectedMonth}&year=${selectedYear}`);
+      const analysisRes = await fetch(`${API_BASE}/budgets/analysis?month=${selectedMonth}&year=${selectedYear}`, {
+        headers: getAuthHeaders()
+      });
       const analysisData = await analysisRes.json();
 
-      // Set categories (expense categories only)
+      // Default categories to ensure all are available
+      const defaultCategories = [
+        { _id: 'shopping', name: 'Shopping', type: 'expense' },
+        { _id: 'food', name: 'Food', type: 'expense' },
+        { _id: 'transport', name: 'Transport', type: 'expense' },
+        { _id: 'travel', name: 'Travel', type: 'expense' },
+        { _id: 'bills', name: 'Bills', type: 'expense' },
+        { _id: 'entertainment', name: 'Entertainment', type: 'expense' },
+        { _id: 'healthcare', name: 'Healthcare', type: 'expense' },
+        { _id: 'salary', name: 'Salary', type: 'income' },
+        { _id: 'investment', name: 'Investment', type: 'expense' },
+        { _id: 'gifts', name: 'Gifts', type: 'expense' },
+        { _id: 'gaming', name: 'Gaming', type: 'expense' },
+        { _id: 'internet', name: 'Internet', type: 'expense' },
+        { _id: 'phone', name: 'Phone', type: 'expense' },
+        { _id: 'other', name: 'Other', type: 'expense' }
+      ];
+
+      // Merge API categories with defaults (avoid duplicates)
       const expenseCategories = budgetData.categories || [];
-      setCategories(expenseCategories);
+      const existingNames = expenseCategories.map(c => c.name.toLowerCase());
+      const mergedCategories = [
+        ...expenseCategories,
+        ...defaultCategories.filter(dc => !existingNames.includes(dc.name.toLowerCase()))
+      ];
+      setCategories(mergedCategories);
       setSpending(budgetData.spending || {});
 
       // Set existing budget data
@@ -346,7 +384,7 @@ const Budget = () => {
 
       await fetch(`${API_BASE}/budgets`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: getAuthHeaders(),
         body: JSON.stringify({
           month: selectedMonth,
           year: selectedYear,
@@ -385,8 +423,8 @@ const Budget = () => {
   // Calculate totals
   const allocatedBudget = Object.values(categoryBudgets).reduce((sum, val) => sum + (val || 0), 0);
   const totalSpent = Object.values(spending).reduce((sum, val) => sum + (val || 0), 0);
-  // Smart Savings = Income - Total Expense - Total Budget
-  const smartSavings = (analysis?.totalIncome || 0) - totalSpent - totalBudget;
+  // Smart Savings = Income - Allocated Budget
+  const smartSavings = (analysis?.totalIncome || 0) - allocatedBudget;
 
   // Helper functions
   const getInitials = (name) => {
@@ -399,115 +437,17 @@ const Budget = () => {
     return `₹${amount?.toLocaleString() || 0}`;
   };
 
-  // Sidebar navigation items
-  const navItems = [
-    { icon: Home, label: "Dashboard", path: "/" },
-    { icon: List, label: "Transactions", path: "/all-transactions" },
-    { icon: Target, label: "Budget", path: "/budget" }
-  ];
-
   return (
     <div className={`w-full min-h-screen flex transition-colors duration-300 ${isDarkMode ? 'bg-slate-900' : 'bg-[#f8f7fc]'}`}>
 
       {/* MOBILE HEADER */}
-      <div className={`md:hidden flex items-center justify-between px-4 py-3 border-b sticky top-0 z-40 ${isDarkMode ? 'bg-slate-900/98 border-slate-800 backdrop-blur-xl' : 'bg-white/98 border-violet-100 backdrop-blur-xl'}`}>
-        <div className="flex items-center gap-2.5">
-          <div className="w-9 h-9 flex items-center justify-center rounded-xl bg-linear-to-br from-violet-500 to-purple-600 text-white font-bold text-sm">₹</div>
-          <span className={`font-semibold tracking-tight ${isDarkMode ? 'text-white' : 'text-slate-800'}`}>ExpenseTrack</span>
-        </div>
-        <button 
-          onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)} 
-          className={`p-2 rounded-xl transition-colors ${isDarkMode ? 'hover:bg-slate-800 text-slate-300' : 'hover:bg-violet-100 text-slate-600'}`}
-        >
-          {isMobileMenuOpen ? <X size={22} /> : <Menu size={22} />}
-        </button>
-      </div>
+      <MobileHeader isMobileMenuOpen={isMobileMenuOpen} setIsMobileMenuOpen={setIsMobileMenuOpen} />
 
       {/* SIDEBAR */}
-      <aside className={`
-        fixed inset-y-0 left-0 z-50 w-64 flex flex-col
-        transition-transform duration-300 md:translate-x-0
-        ${isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full'}
-        ${isDarkMode 
-          ? 'bg-slate-900 border-r border-slate-800' 
-          : 'bg-white border-r border-violet-100'}
-      `}>
-        
-        {/* Logo */}
-        <div className={`p-5 border-b shrink-0 ${isDarkMode ? 'border-slate-800' : 'border-violet-100'}`}>
-          <div className="hidden md:flex items-center gap-2.5">
-            <div className="w-10 h-10 flex items-center justify-center rounded-xl bg-linear-to-br from-violet-500 to-purple-600 text-white font-bold shadow-lg shadow-purple-500/25">₹</div>
-            <span className={`font-bold tracking-tight ${isDarkMode ? 'text-white' : 'text-slate-800'}`}>ExpenseTrack</span>
-          </div>
-        </div>
-
-        {/* Navigation */}
-        <nav className="flex-1 p-4 overflow-y-auto">
-          <p className={`text-[10px] font-semibold uppercase tracking-wider px-3 mb-3 ${isDarkMode ? 'text-slate-600' : 'text-slate-400'}`}>Menu</p>
-          <div className="space-y-1">
-            {navItems.map((item) => {
-              const isActive = location.pathname === item.path;
-              return (
-                <Link
-                  key={item.label}
-                  to={item.path}
-                  onClick={() => setIsMobileMenuOpen(false)}
-                  className={`
-                    flex items-center gap-3 px-3 py-2.5 rounded-xl font-medium text-sm
-                    transition-all duration-200
-                    ${isActive 
-                      ? (isDarkMode 
-                          ? 'bg-linear-to-r from-violet-600/20 to-purple-600/20 text-violet-400 border border-violet-500/30'
-                          : 'bg-linear-to-r from-violet-100 to-purple-100 text-violet-700 border border-violet-200')
-                      : (isDarkMode 
-                          ? 'text-slate-400 hover:text-white hover:bg-slate-800' 
-                          : 'text-slate-500 hover:text-violet-700 hover:bg-violet-50')}
-                  `}
-                >
-                  <item.icon size={18} />
-                  {item.label}
-                </Link>
-              );
-            })}
-          </div>
-        </nav>
-
-        {/* User & Settings */}
-        <div className={`p-4 border-t ${isDarkMode ? 'border-slate-800' : 'border-violet-100'}`}>
-          <div className="space-y-1">
-            <Link to="/settings" className={`flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm transition-all duration-200 ${isDarkMode ? 'text-slate-400 hover:text-white hover:bg-slate-800' : 'text-slate-500 hover:text-violet-700 hover:bg-violet-50'}`}>
-              <Settings size={18} />
-              Settings
-            </Link>
-            <button onClick={toggleTheme} className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm transition-all duration-200 ${isDarkMode ? 'text-slate-400 hover:text-white hover:bg-slate-800' : 'text-slate-500 hover:text-violet-700 hover:bg-violet-50'}`}>
-              {isDarkMode ? <Sun size={18} /> : <Moon size={18} />}
-              {isDarkMode ? 'Light Mode' : 'Dark Mode'}
-            </button>
-          </div>
-
-          {/* User Avatar */}
-          <div className={`mt-4 pt-4 border-t ${isDarkMode ? 'border-slate-800' : 'border-violet-100'}`}>
-            <Link to="/profile" className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl flex items-center justify-center font-medium text-sm overflow-hidden bg-linear-to-br from-violet-400 to-purple-500 text-white">
-                {user?.avatar ? (
-                  <img src={user.avatar} alt={user.name} className="w-full h-full object-cover" />
-                ) : (
-                  getInitials(user?.name || "User")
-                )}
-              </div>
-              <div className="flex-1 min-w-0">
-                <p className={`text-sm font-medium truncate ${isDarkMode ? 'text-white' : 'text-slate-800'}`}>{user?.name || "User"}</p>
-                <p className={`text-xs truncate ${isDarkMode ? 'text-slate-500' : 'text-slate-400'}`}>{user?.email || "user@email.com"}</p>
-              </div>
-            </Link>
-          </div>
-        </div>
-      </aside>
+      <Sidebar isMobileMenuOpen={isMobileMenuOpen} setIsMobileMenuOpen={setIsMobileMenuOpen} />
 
       {/* Mobile Overlay */}
-      {isMobileMenuOpen && (
-        <div className="fixed inset-0 bg-black/50 z-40 md:hidden" onClick={() => setIsMobileMenuOpen(false)} />
-      )}
+      <MobileOverlay isMobileMenuOpen={isMobileMenuOpen} setIsMobileMenuOpen={setIsMobileMenuOpen} />
 
       {/* MAIN CONTENT */}
       <main className="flex-1 md:ml-64 min-h-screen">
@@ -555,135 +495,266 @@ const Budget = () => {
             </div>
           ) : (
             <>
-              {/* Total Monthly Budget Input */}
+              {/* Hero Budget Card - Total Allocated Budget */}
               <div className={`
-                rounded-2xl p-6 mb-6
-                ${isDarkMode ? 'bg-slate-800/80' : 'bg-white shadow-sm'}
+                relative rounded-3xl overflow-hidden mb-8
+                bg-linear-to-br from-violet-600 via-purple-600 to-indigo-700
               `}>
-                <div className="flex flex-col sm:flex-row sm:items-center gap-4">
-                  <div className="flex items-center gap-3">
-                    <div className="w-12 h-12 rounded-xl flex items-center justify-center bg-linear-to-br from-violet-500 to-purple-600 text-white">
-                      <Wallet size={24} />
+                {/* Decorative Elements */}
+                <div className="absolute top-0 right-0 w-64 h-64 bg-white/5 rounded-full -translate-y-1/2 translate-x-1/2" />
+                <div className="absolute bottom-0 left-0 w-48 h-48 bg-white/5 rounded-full translate-y-1/2 -translate-x-1/2" />
+                <div className="absolute top-1/2 right-1/4 w-24 h-24 bg-white/5 rounded-full" />
+                
+                <div className="relative z-10 p-6 md:p-8">
+                  <div className="flex flex-col lg:flex-row lg:items-center gap-6">
+                    {/* Left Side - Budget Display */}
+                    <div className="flex-1">
+                      <div className="flex items-center gap-3 mb-4">
+                        <div className="w-14 h-14 rounded-2xl bg-white/20 backdrop-blur-sm flex items-center justify-center">
+                          <Wallet size={28} className="text-white" />
+                        </div>
+                        <div>
+                          <p className="text-white/70 text-sm font-medium flex items-center gap-2">
+                            <Calendar size={14} />
+                            {monthNames[selectedMonth - 1]} {selectedYear}
+                          </p>
+                          <h2 className="text-white text-lg font-semibold">Total Allocated Budget</h2>
+                        </div>
+                      </div>
+                      
+                      {/* Budget Amount Display */}
+                      <div className="mb-6">
+                        <div className="flex items-baseline gap-2 mb-2">
+                          <span className="text-5xl md:text-6xl font-bold text-white tracking-tight">
+                            ₹{allocatedBudget.toLocaleString() || '0'}
+                          </span>
+                        </div>
+                        <p className="text-white/60 text-sm">
+                          {budgetedCategories.length > 0 
+                            ? `Allocated across ${budgetedCategories.length} categories`
+                            : 'Add category budgets below to allocate your budget'
+                          }
+                        </p>
+                      </div>
+
+                      {/* Allocation Progress */}
+                      <div className="space-y-2">
+                        <div className="flex justify-between text-sm">
+                          <span className="text-white/70">Categories Allocated</span>
+                          <span className="text-white font-medium">
+                            {budgetedCategories.length} of {categories.length}
+                          </span>
+                        </div>
+                        <div className="h-3 bg-white/20 rounded-full overflow-hidden backdrop-blur-sm">
+                          <div 
+                            className="h-full rounded-full transition-all duration-700 bg-linear-to-r from-emerald-400 to-teal-500"
+                            style={{ width: `${categories.length > 0 ? (budgetedCategories.length / categories.length) * 100 : 0}%` }}
+                          />
+                        </div>
+                        <div className="flex justify-between text-xs text-white/60">
+                          <span>Monthly Income: ₹{(analysis?.totalIncome || 0).toLocaleString()}</span>
+                          <span>Potential Savings: ₹{Math.max(smartSavings, 0).toLocaleString()}</span>
+                        </div>
+                      </div>
                     </div>
-                    <div>
-                      <h3 className={`font-semibold ${isDarkMode ? 'text-white' : 'text-slate-800'}`}>Total Monthly Budget</h3>
-                      <p className={`text-sm ${isDarkMode ? 'text-slate-400' : 'text-slate-500'}`}>Set your overall spending limit</p>
-                    </div>
-                  </div>
-                  <div className="flex-1 sm:max-w-xs sm:ml-auto">
-                    <div className="relative">
-                      <span className={`absolute left-4 top-1/2 -translate-y-1/2 text-lg font-bold ${isDarkMode ? 'text-slate-400' : 'text-slate-500'}`}>₹</span>
-                      <input
-                        type="number"
-                        value={totalBudget || ''}
-                        onChange={(e) => setTotalBudget(parseFloat(e.target.value) || 0)}
-                        placeholder="Enter budget..."
-                        className={`
-                          w-full pl-10 pr-4 py-3 rounded-xl text-lg font-semibold
-                          transition-all duration-200 outline-none
-                          ${isDarkMode 
-                            ? 'bg-slate-700/50 text-white placeholder-slate-500 border border-slate-600 focus:border-violet-500 focus:ring-2 focus:ring-violet-500/20' 
-                            : 'bg-violet-50 text-slate-800 placeholder-slate-400 border border-violet-200 focus:border-violet-400 focus:ring-2 focus:ring-violet-400/20'}
-                        `}
-                      />
+
+                    {/* Right Side - Quick Stats */}
+                    <div className="lg:w-72 space-y-3">
+                      {/* Income Card */}
+                      <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-4">
+                        <div className="flex items-center justify-between">
+                          <div>
+                            <p className="text-white/60 text-xs font-medium">Monthly Income</p>
+                            <p className="text-white text-2xl font-bold">₹{(analysis?.totalIncome || 0).toLocaleString()}</p>
+                          </div>
+                          <div className="w-10 h-10 rounded-xl bg-emerald-500/20 flex items-center justify-center">
+                            <TrendingUp size={20} className="text-emerald-300" />
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Savings Card */}
+                      <div className={`backdrop-blur-sm rounded-2xl p-4 ${
+                        smartSavings >= 0 ? 'bg-emerald-500/20' : 'bg-rose-500/20'
+                      }`}>
+                        <div className="flex items-center justify-between">
+                          <div>
+                            <p className="text-white/60 text-xs font-medium">Smart Savings</p>
+                            <p className={`text-2xl font-bold ${smartSavings >= 0 ? 'text-emerald-300' : 'text-rose-300'}`}>
+                              {smartSavings >= 0 ? '+' : '-'}₹{Math.abs(smartSavings).toLocaleString()}
+                            </p>
+                          </div>
+                          <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${
+                            smartSavings >= 0 ? 'bg-emerald-500/30' : 'bg-rose-500/30'
+                          }`}>
+                            <Sparkles size={20} className={smartSavings >= 0 ? 'text-emerald-300' : 'text-rose-300'} />
+                          </div>
+                        </div>
+                        <p className="text-white/50 text-xs mt-2">Income - Allocated Budget</p>
+                      </div>
                     </div>
                   </div>
                 </div>
               </div>
 
-              {/* Smart Savings Overview */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-                <SavingsCard
-                  title="Monthly Income"
-                  value={formatCurrency(analysis?.totalIncome || 0)}
-                  icon={TrendingUp}
-                  color="emerald"
-                  isDarkMode={isDarkMode}
-                />
-                <SavingsCard
-                  title="Allocated Budget"
-                  value={formatCurrency(allocatedBudget)}
-                  subtitle={`of ${formatCurrency(totalBudget)}`}
-                  icon={Wallet}
-                  color="violet"
-                  isDarkMode={isDarkMode}
-                />
-                <SavingsCard
-                  title="Total Spent"
-                  value={formatCurrency(totalSpent)}
-                  subtitle={allocatedBudget > 0 ? `${Math.round((totalSpent / allocatedBudget) * 100)}% of budget` : undefined}
-                  icon={ShoppingCart}
-                  color="rose"
-                  isDarkMode={isDarkMode}
-                />
-                <SavingsCard
-                  title="Smart Savings"
-                  value={`₹${smartSavings.toLocaleString()}`}
-                  subtitle={analysis?.totalIncome > 0 ? `Income - Expense - Budget` : undefined}
-                  icon={Sparkles}
-                  color={smartSavings >= 0 ? "emerald" : "rose"}
-                  isDarkMode={isDarkMode}
-                  isMain
-                />
+              {/* Overview Stats Cards - Allocated Budget & Smart Savings */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-8">
+                {/* Total Allocated Budget Card */}
+                <div className={`
+                  rounded-2xl p-6 transition-all duration-200 hover:-translate-y-1 hover:shadow-lg
+                  ${isDarkMode 
+                    ? 'bg-slate-800/80 hover:shadow-violet-500/10' 
+                    : 'bg-white shadow-sm hover:shadow-violet-500/20'}
+                `}>
+                  <div className="flex items-center justify-between mb-4">
+                    <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${isDarkMode ? 'bg-violet-500/20' : 'bg-violet-100'}`}>
+                      <Layers size={24} className={isDarkMode ? 'text-violet-400' : 'text-violet-600'} />
+                    </div>
+                    <span className={`text-sm px-3 py-1.5 rounded-full font-semibold ${
+                      budgetedCategories.length > 0
+                        ? (isDarkMode ? 'bg-violet-500/20 text-violet-400' : 'bg-violet-100 text-violet-600')
+                        : (isDarkMode ? 'bg-slate-700 text-slate-400' : 'bg-slate-100 text-slate-500')
+                    }`}>
+                      {budgetedCategories.length} categories
+                    </span>
+                  </div>
+                  <p className={`text-sm font-medium mb-1 ${isDarkMode ? 'text-slate-400' : 'text-slate-500'}`}>Total Allocated Budget</p>
+                  <p className={`text-3xl font-bold ${isDarkMode ? 'text-white' : 'text-slate-800'}`}>
+                    ₹{allocatedBudget.toLocaleString()}
+                  </p>
+                  <p className={`text-xs mt-2 ${isDarkMode ? 'text-slate-500' : 'text-slate-400'}`}>
+                    Sum of all category budgets
+                  </p>
+                </div>
+
+                {/* Smart Savings Card */}
+                <div className={`
+                  rounded-2xl p-6 transition-all duration-200 hover:-translate-y-1 hover:shadow-lg overflow-hidden relative
+                  ${smartSavings >= 0
+                    ? (isDarkMode 
+                        ? 'bg-linear-to-br from-emerald-600/80 to-teal-700/80' 
+                        : 'bg-linear-to-br from-emerald-500 to-teal-600')
+                    : (isDarkMode 
+                        ? 'bg-linear-to-br from-rose-600/80 to-red-700/80' 
+                        : 'bg-linear-to-br from-rose-500 to-red-600')
+                  }
+                `}>
+                  {/* Decorative circles */}
+                  <div className="absolute -right-4 -top-4 w-24 h-24 rounded-full bg-white/10" />
+                  <div className="absolute -right-2 -bottom-6 w-16 h-16 rounded-full bg-white/5" />
+                  
+                  <div className="relative z-10">
+                    <div className="flex items-center justify-between mb-4">
+                      <div className="w-12 h-12 rounded-xl bg-white/20 flex items-center justify-center">
+                        <Sparkles size={24} className="text-white" />
+                      </div>
+                      {smartSavings >= 0 ? (
+                        <CheckCircle size={20} className="text-white/80" />
+                      ) : (
+                        <AlertCircle size={20} className="text-white/80" />
+                      )}
+                    </div>
+                    <p className="text-sm font-medium mb-1 text-white/70">Smart Savings</p>
+                    <p className="text-3xl font-bold text-white">
+                      {smartSavings >= 0 ? '+' : '-'}₹{Math.abs(smartSavings).toLocaleString()}
+                    </p>
+                    <p className="text-xs mt-2 text-white/60">
+                      Income (₹{(analysis?.totalIncome || 0).toLocaleString()}) - Allocated Budget
+                    </p>
+                  </div>
+                </div>
               </div>
 
-              {/* Savings Insights */}
+              {/* Smart Insights Banner */}
               {(analysis?.totalIncome > 0 || totalBudget > 0) && (
                 <div className={`
-                  rounded-2xl p-6 mb-8 border-l-4 border-l-violet-500
-                  ${isDarkMode ? 'bg-slate-800/80' : 'bg-white shadow-sm'}
+                  rounded-2xl p-5 mb-8 overflow-hidden relative
+                  ${smartSavings >= 0 
+                    ? (isDarkMode ? 'bg-linear-to-r from-emerald-900/30 to-teal-900/30 border border-emerald-500/20' : 'bg-linear-to-r from-emerald-50 to-teal-50 border border-emerald-200')
+                    : (isDarkMode ? 'bg-linear-to-r from-rose-900/30 to-red-900/30 border border-rose-500/20' : 'bg-linear-to-r from-rose-50 to-red-50 border border-rose-200')
+                  }
                 `}>
                   <div className="flex items-start gap-4">
-                    <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${isDarkMode ? 'bg-violet-500/20' : 'bg-violet-100'}`}>
-                      <PiggyBank size={20} className={isDarkMode ? 'text-violet-400' : 'text-violet-600'} />
+                    <div className={`
+                      w-12 h-12 rounded-2xl flex items-center justify-center shrink-0
+                      ${smartSavings >= 0 
+                        ? (isDarkMode ? 'bg-emerald-500/20' : 'bg-emerald-100')
+                        : (isDarkMode ? 'bg-rose-500/20' : 'bg-rose-100')
+                      }
+                    `}>
+                      {smartSavings >= 0 ? (
+                        <PiggyBank size={24} className={isDarkMode ? 'text-emerald-400' : 'text-emerald-600'} />
+                      ) : (
+                        <AlertCircle size={24} className={isDarkMode ? 'text-rose-400' : 'text-rose-600'} />
+                      )}
                     </div>
                     <div className="flex-1">
-                      <h3 className={`font-semibold mb-2 ${isDarkMode ? 'text-white' : 'text-slate-800'}`}>Smart Savings Analysis</h3>
-                      <div className="space-y-2">
-                        <p className={`text-sm ${isDarkMode ? 'text-slate-400' : 'text-slate-500'}`}>
-                          <strong>Formula:</strong> Income (₹{(analysis?.totalIncome || 0).toLocaleString()}) - Expense (₹{totalSpent.toLocaleString()}) - Budget (₹{totalBudget.toLocaleString()})
-                        </p>
-                        {smartSavings >= 0 ? (
-                          <p className={`text-sm flex items-center gap-2 ${isDarkMode ? 'text-emerald-400' : 'text-emerald-600'}`}>
-                            <CheckCircle size={16} />
-                            Great! You can save <strong>₹{smartSavings.toLocaleString()}</strong> after expenses and planned budget.
-                          </p>
-                        ) : (
-                          <p className={`text-sm flex items-center gap-2 ${isDarkMode ? 'text-rose-400' : 'text-rose-600'}`}>
-                            <AlertCircle size={16} />
-                            You're <strong>₹{Math.abs(smartSavings).toLocaleString()}</strong> over your income. Consider reducing your budget.
-                          </p>
-                        )}
-                        
-                        {allocatedBudget !== totalBudget && totalBudget > 0 && (
-                          <p className={`text-sm ${isDarkMode ? 'text-amber-400' : 'text-amber-600'}`}>
-                            <AlertCircle size={16} className="inline mr-1" />
-                            Category budgets (₹{allocatedBudget.toLocaleString()}) don't match total budget (₹{totalBudget.toLocaleString()})
-                          </p>
+                      <div className="flex items-center gap-2 mb-2">
+                        <h3 className={`font-bold ${isDarkMode ? 'text-white' : 'text-slate-800'}`}>
+                          {smartSavings >= 0 ? '🎉 Great Financial Health!' : '⚠️ Budget Alert'}
+                        </h3>
+                        {smartSavings >= 0 && (
+                          <span className={`text-xs px-2 py-0.5 rounded-full ${isDarkMode ? 'bg-emerald-500/20 text-emerald-400' : 'bg-emerald-100 text-emerald-700'}`}>
+                            On Track
+                          </span>
                         )}
                       </div>
+                      
+                      {smartSavings >= 0 ? (
+                        <p className={`text-sm ${isDarkMode ? 'text-slate-300' : 'text-slate-600'}`}>
+                          Based on your income and allocated budget, you can save <strong className={isDarkMode ? 'text-emerald-400' : 'text-emerald-600'}>₹{smartSavings.toLocaleString()}</strong> this month!
+                        </p>
+                      ) : (
+                        <p className={`text-sm ${isDarkMode ? 'text-slate-300' : 'text-slate-600'}`}>
+                          Your allocated budget exceeds your income by <strong className={isDarkMode ? 'text-rose-400' : 'text-rose-600'}>₹{Math.abs(smartSavings).toLocaleString()}</strong>. Consider reducing your budget allocations.
+                        </p>
+                      )}
                     </div>
                   </div>
                 </div>
               )}
 
-              {/* Category Budgets - Add New */}
+              {/* Category Budgets Section */}
               <div className="mb-6">
-                <div className="flex items-center justify-between mb-4">
-                  <h2 className={`text-lg font-semibold ${isDarkMode ? 'text-white' : 'text-slate-800'}`}>
-                    Allocate Budget by Category
-                  </h2>
-                  <span className={`text-sm ${isDarkMode ? 'text-slate-400' : 'text-slate-500'}`}>
-                    {budgetedCategories.length} of {categories.length} categories
-                  </span>
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
+                  <div>
+                    <h2 className={`text-xl font-bold ${isDarkMode ? 'text-white' : 'text-slate-800'}`}>
+                      Category Budgets
+                    </h2>
+                    <p className={`text-sm mt-1 ${isDarkMode ? 'text-slate-400' : 'text-slate-500'}`}>
+                      Allocate your budget across different spending categories
+                    </p>
+                  </div>
+                  <div className={`
+                    flex items-center gap-2 px-4 py-2 rounded-xl
+                    ${isDarkMode ? 'bg-slate-800' : 'bg-white shadow-sm'}
+                  `}>
+                    <Layers size={16} className={isDarkMode ? 'text-violet-400' : 'text-violet-600'} />
+                    <span className={`text-sm font-medium ${isDarkMode ? 'text-slate-300' : 'text-slate-700'}`}>
+                      {budgetedCategories.length} of {categories.length} allocated
+                    </span>
+                  </div>
                 </div>
 
-                {/* Add Category Budget Form */}
+                {/* Add New Category Budget - Expanded View */}
                 <div className={`
-                  rounded-2xl p-5 mb-4
-                  ${isDarkMode ? 'bg-slate-800/80' : 'bg-white shadow-sm'}
+                  rounded-2xl p-6 mb-6 border-2 border-dashed
+                  ${isDarkMode 
+                    ? 'bg-slate-800/50 border-slate-700' 
+                    : 'bg-linear-to-br from-violet-50 to-purple-50 border-violet-200'}
                 `}>
-                  <div className="flex flex-col sm:flex-row gap-3">
+                  <div className="flex items-center gap-3 mb-4">
+                    <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${isDarkMode ? 'bg-violet-500/20' : 'bg-violet-100'}`}>
+                      <Plus size={20} className={isDarkMode ? 'text-violet-400' : 'text-violet-600'} />
+                    </div>
+                    <div>
+                      <h3 className={`font-semibold ${isDarkMode ? 'text-white' : 'text-slate-800'}`}>Allocate Budget</h3>
+                      <p className={`text-xs ${isDarkMode ? 'text-slate-400' : 'text-slate-500'}`}>Select a category and set a budget amount</p>
+                    </div>
+                  </div>
+
+                  {/* Quick Add Form */}
+                  <div className="flex flex-col sm:flex-row gap-3 mb-5">
                     {/* Category Dropdown */}
                     <div className="relative flex-1">
                       <button
@@ -694,7 +765,7 @@ const Budget = () => {
                           transition-all duration-200
                           ${isDarkMode 
                             ? 'bg-slate-700/50 text-white border border-slate-600 hover:border-violet-500' 
-                            : 'bg-violet-50 text-slate-800 border border-violet-200 hover:border-violet-400'}
+                            : 'bg-white text-slate-800 border border-violet-200 hover:border-violet-400 shadow-sm'}
                         `}
                       >
                         <span className={selectedCategory ? '' : (isDarkMode ? 'text-slate-500' : 'text-slate-400')}>
@@ -759,7 +830,7 @@ const Budget = () => {
                           transition-all duration-200 outline-none
                           ${isDarkMode 
                             ? 'bg-slate-700/50 text-white placeholder-slate-500 border border-slate-600 focus:border-violet-500' 
-                            : 'bg-violet-50 text-slate-800 placeholder-slate-400 border border-violet-200 focus:border-violet-400'}
+                            : 'bg-white text-slate-800 placeholder-slate-400 border border-violet-200 focus:border-violet-400 shadow-sm'}
                         `}
                       />
                     </div>
@@ -781,62 +852,119 @@ const Budget = () => {
                       Add
                     </button>
                   </div>
+
+                  {/* Available Categories Grid - Always Visible */}
+                  {availableCategories.length > 0 && (
+                    <div>
+                      <p className={`text-xs font-medium mb-3 ${isDarkMode ? 'text-slate-400' : 'text-slate-500'}`}>
+                        Quick Add Categories:
+                      </p>
+                      <div className="flex flex-wrap gap-2">
+                        {availableCategories.map((cat) => {
+                          const Icon = categoryIcons[cat.name] || CreditCard;
+                          const color = categoryColors[cat.name] || "#6b7280";
+                          return (
+                            <button
+                              key={cat._id}
+                              onClick={() => {
+                                setSelectedCategory(cat.name);
+                                document.querySelector('input[placeholder="Amount"]')?.focus();
+                              }}
+                              className={`
+                                flex items-center gap-2 px-3 py-2 rounded-xl text-xs font-medium
+                                transition-all duration-200 hover:-translate-y-0.5
+                                ${selectedCategory === cat.name 
+                                  ? 'ring-2 ring-violet-500 ring-offset-2' 
+                                  : ''
+                                }
+                                ${isDarkMode 
+                                  ? 'bg-slate-700/70 text-slate-300 hover:bg-slate-700' 
+                                  : 'bg-white text-slate-600 hover:bg-white shadow-sm hover:shadow'}
+                              `}
+                            >
+                              <Icon size={14} style={{ color }} />
+                              {cat.name}
+                            </button>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  )}
                 </div>
 
-                {/* Existing Category Budgets */}
+                {/* Existing Category Budgets Grid */}
                 {budgetedCategories.length > 0 ? (
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    {budgetedCategories.map((categoryName) => (
-                      <CategoryBudgetCard
-                        key={categoryName}
-                        categoryName={categoryName}
-                        budget={categoryBudgets[categoryName] || 0}
-                        spent={spending[categoryName] || 0}
-                        onChange={handleCategoryBudgetChange}
-                        onDelete={handleDeleteCategoryBudget}
-                        isDarkMode={isDarkMode}
-                      />
-                    ))}
+                  <div className="space-y-4">
+                    <div className="flex items-center justify-between">
+                      <h3 className={`text-sm font-semibold ${isDarkMode ? 'text-slate-300' : 'text-slate-700'}`}>
+                        Your Category Budgets
+                      </h3>
+                      <span className={`text-xs ${isDarkMode ? 'text-slate-500' : 'text-slate-400'}`}>
+                        Total: ₹{allocatedBudget.toLocaleString()}
+                      </span>
+                    </div>
+                    <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+                      {budgetedCategories.map((categoryName) => (
+                        <CategoryBudgetCard
+                          key={categoryName}
+                          categoryName={categoryName}
+                          budget={categoryBudgets[categoryName] || 0}
+                          spent={spending[categoryName] || 0}
+                          onChange={handleCategoryBudgetChange}
+                          onDelete={handleDeleteCategoryBudget}
+                          isDarkMode={isDarkMode}
+                        />
+                      ))}
+                    </div>
                   </div>
                 ) : (
                   <div className={`
-                    rounded-2xl p-8 text-center
+                    rounded-2xl p-10 text-center
                     ${isDarkMode ? 'bg-slate-800/80' : 'bg-white shadow-sm'}
                   `}>
-                    <div className={`w-16 h-16 rounded-2xl mx-auto mb-4 flex items-center justify-center ${isDarkMode ? 'bg-violet-500/20' : 'bg-violet-100'}`}>
-                      <Target size={32} className={isDarkMode ? 'text-violet-400' : 'text-violet-600'} />
+                    <div className={`w-20 h-20 rounded-3xl mx-auto mb-5 flex items-center justify-center ${isDarkMode ? 'bg-linear-to-br from-violet-500/20 to-purple-500/20' : 'bg-linear-to-br from-violet-100 to-purple-100'}`}>
+                      <Target size={40} className={isDarkMode ? 'text-violet-400' : 'text-violet-600'} />
                     </div>
-                    <h3 className={`font-semibold mb-2 ${isDarkMode ? 'text-white' : 'text-slate-800'}`}>No Category Budgets Set</h3>
-                    <p className={`text-sm ${isDarkMode ? 'text-slate-400' : 'text-slate-500'}`}>
-                      Use the dropdown above to add category-wise budget allocations.
+                    <h3 className={`text-lg font-bold mb-2 ${isDarkMode ? 'text-white' : 'text-slate-800'}`}>No Category Budgets Yet</h3>
+                    <p className={`text-sm mb-4 max-w-md mx-auto ${isDarkMode ? 'text-slate-400' : 'text-slate-500'}`}>
+                      Start by selecting categories from above to allocate your monthly budget effectively.
                     </p>
+                    <div className={`inline-flex items-center gap-2 text-xs ${isDarkMode ? 'text-violet-400' : 'text-violet-600'}`}>
+                      <Sparkles size={14} />
+                      Pro tip: Allocate budgets to track spending by category
+                    </div>
                   </div>
                 )}
               </div>
 
-              {/* Save Button */}
-              <div className="flex justify-end">
+              {/* Save Button - Fixed at bottom for mobile, inline for desktop */}
+              <div className={`
+                sticky bottom-4 z-10 flex justify-end
+                ${isDarkMode ? '' : ''}
+              `}>
                 <button
                   onClick={handleSaveBudget}
                   disabled={saving}
                   className={`
-                    flex items-center gap-2 px-6 py-3 rounded-xl font-semibold text-white
-                    transition-all duration-200
-                    bg-linear-to-r from-violet-500 to-purple-600
-                    hover:from-violet-600 hover:to-purple-700
-                    hover:-translate-y-0.5 hover:shadow-lg hover:shadow-purple-500/25
+                    flex items-center gap-3 px-8 py-4 rounded-2xl font-bold text-white
+                    transition-all duration-300
+                    bg-linear-to-r from-violet-500 via-purple-500 to-indigo-600
+                    hover:from-violet-600 hover:via-purple-600 hover:to-indigo-700
+                    hover:-translate-y-1 hover:shadow-2xl hover:shadow-purple-500/30
                     disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:translate-y-0
+                    shadow-lg shadow-purple-500/20
                   `}
                 >
                   {saving ? (
                     <>
-                      <RefreshCw size={18} className="animate-spin" />
-                      Saving...
+                      <RefreshCw size={20} className="animate-spin" />
+                      <span>Saving Changes...</span>
                     </>
                   ) : (
                     <>
-                      <Save size={18} />
-                      Save Budget
+                      <Save size={20} />
+                      <span>Save Budget</span>
+                      <span className="text-white/60 text-sm ml-1">({monthNames[selectedMonth - 1]} {selectedYear})</span>
                     </>
                   )}
                 </button>

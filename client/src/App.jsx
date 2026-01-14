@@ -5,8 +5,10 @@ import AllTransactions from "./components/AllTransactions.jsx";
 import Profile from "./components/Profile.jsx";
 import ProfileOverview from "./components/ProfileOverview.jsx";
 import Budget from "./components/Budget.jsx";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import Auth from "./components/Auth.jsx";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { useTheme } from "./context/ThemeContext.jsx";
+import { useAuth } from "./context/AuthContext.jsx";
 
 // Splash Screen Component
 const SplashScreen = ({ onComplete }) => {
@@ -75,6 +77,7 @@ const SplashScreen = ({ onComplete }) => {
 
 function App() {
   const { isDarkMode } = useTheme();
+  const { isAuthenticated, loading } = useAuth();
   const [showSplash, setShowSplash] = useState(true);
   const [appReady, setAppReady] = useState(false);
 
@@ -83,21 +86,50 @@ function App() {
     setTimeout(() => setAppReady(true), 100);
   };
 
+  // Show splash screen while checking auth
+  if (loading || showSplash) {
+    return <SplashScreen onComplete={handleSplashComplete} />;
+  }
+
   return (
     <div className={`min-h-screen ${isDarkMode ? 'dark bg-slate-900' : 'bg-[#fafafa]'}`}>
-      {showSplash && <SplashScreen onComplete={handleSplashComplete} />}
-      
-      <div className={`transition-opacity duration-500 ${showSplash ? 'opacity-0' : 'opacity-100'}`}>
-        <BrowserRouter>
-          <Routes>
-            <Route path="/" element={<Dashboard />} />
-            <Route path="/all-transactions" element={<AllTransactions />} />
-            <Route path="/budget" element={<Budget />} />
-            <Route path="/profile" element={<ProfileOverview />} />
-            <Route path="/settings" element={<Profile />} />
-          </Routes>
-        </BrowserRouter>
-      </div>
+      <BrowserRouter>
+        <Routes>
+          {/* Public route */}
+          <Route 
+            path="/login" 
+            element={isAuthenticated ? <Navigate to="/" replace /> : <Auth isDarkMode={isDarkMode} />} 
+          />
+          
+          {/* Protected routes */}
+          <Route 
+            path="/" 
+            element={isAuthenticated ? <Dashboard /> : <Navigate to="/login" replace />} 
+          />
+          <Route 
+            path="/all-transactions" 
+            element={isAuthenticated ? <AllTransactions /> : <Navigate to="/login" replace />} 
+          />
+          <Route 
+            path="/budget" 
+            element={isAuthenticated ? <Budget /> : <Navigate to="/login" replace />} 
+          />
+          <Route 
+            path="/profile" 
+            element={isAuthenticated ? <ProfileOverview /> : <Navigate to="/login" replace />} 
+          />
+          <Route 
+            path="/settings" 
+            element={isAuthenticated ? <Profile /> : <Navigate to="/login" replace />} 
+          />
+          
+          {/* Catch all - redirect to login or home based on auth */}
+          <Route 
+            path="*" 
+            element={<Navigate to={isAuthenticated ? "/" : "/login"} replace />} 
+          />
+        </Routes>
+      </BrowserRouter>
     </div>
   );
 }
