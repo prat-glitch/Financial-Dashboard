@@ -80,8 +80,8 @@ const Auth = ({ onLogin, isDarkMode }) => {
         googleId: "google_" + Date.now()
       };
 
-      const API_BASE = import.meta.env.VITE_API_URL || "http://localhost:3000/api";
-      const od: "POST",
+      const response = await fetch(`${API_BASE}/users/google-auth`, {
+        method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(mockGoogleUser)
       });
