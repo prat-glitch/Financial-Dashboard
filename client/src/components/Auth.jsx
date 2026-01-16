@@ -2,7 +2,8 @@ import React, { useState } from "react";
 import { Mail, Lock, Eye, EyeOff, ArrowRight, User } from "lucide-react";
 import { useAuth } from "../context/AuthContext.jsx";
 
-const API_BASE = import.meta.env.VITE_API_URL || "http://localhost:3000/api";
+// Normalize API URL - remove trailing slash and ensure no double slashes
+const API_BASE = (import.meta.env.VITE_API_URL || "http://localhost:3000/api").replace(/\/+$/, '');
 
 const Auth = ({ onLogin, isDarkMode }) => {
   const { login } = useAuth();
@@ -35,12 +36,12 @@ const Auth = ({ onLogin, isDarkMode }) => {
         return;
       }
 
-      const endpoint = isLogin ? "/api/users/login" : "/api/users/register";
+      const endpoint = isLogin ? "/users/login" : "/users/register";
       const body = isLogin 
         ? { email: form.email, password: form.password }
         : { name: form.name, email: form.email, password: form.password };
 
-      const response = await fetch(`${API_BASE.replace('/api', '')}${endpoint}`, {
+      const response = await fetch(`${API_BASE}${endpoint}`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(body)

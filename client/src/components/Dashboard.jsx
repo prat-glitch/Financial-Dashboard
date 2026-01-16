@@ -11,7 +11,7 @@ import { useUser } from "../context/UserContext.jsx";
 import { useAuth } from "../context/AuthContext.jsx";
 import Sidebar, { MobileHeader, MobileOverlay } from "./Sidebar.jsx";
 
-const API_BASE = import.meta.env.VITE_API_URL || "http://localhost:3000/api";
+const API_BASE = (import.meta.env.VITE_API_URL || "http://localhost:3000/api").replace(/\/+$/, '');
 
 // Helper to get auth headers
 const getAuthHeaders = () => {
