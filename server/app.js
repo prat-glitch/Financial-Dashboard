@@ -13,31 +13,21 @@ const budgetRoutes = require('./src/routes/budgetRoutes');
 
 const app = express();
 
-// --- Middlewares ---
-// Manual CORS headers for Vercel compatibility
+// --- CORS Configuration (Simplified for Vercel) ---
 app.use((req, res, next) => {
-  const origin = req.headers.origin;
+  // Allow all origins (or specify your frontend domain)
+  res.header('Access-Control-Allow-Origin', '*');
+  res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
+  res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, Authorization');
+  res.header('Access-Control-Allow-Credentials', 'true');
   
-  // Allow all origins for now (or specify your frontend URL)
-  res.setHeader('Access-Control-Allow-Origin', origin || '*');
-  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
-  res.setHeader('Access-Control-Allow-Credentials', 'true');
-  
-  // Handle preflight requests
+  // Handle OPTIONS method
   if (req.method === 'OPTIONS') {
-    return res.status(200).end();
+    return res.sendStatus(200);
   }
   
   next();
 });
-
-// Additional CORS middleware as backup
-app.use(cors({
-  origin: true,
-  credentials: true,
-  optionsSuccessStatus: 200
-}));
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
