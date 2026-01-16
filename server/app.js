@@ -42,8 +42,8 @@ app.use(cors({
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// --- Connect to MongoDB ---
-connectdb();
+// --- Connect to MongoDB (non-blocking) ---
+connectdb().catch(err => console.error('DB connection error:', err));
 
 // --- Test Route ---
 app.get('/', (req, res) => {
@@ -77,6 +77,20 @@ app.use('/api/users', userRoutes);
 app.use('/api/categories', categoryRoutes);
 app.use('/api/data', dataRoutes);
 app.use('/api/budgets', budgetRoutes);
+
+// Global error handler - ensure CORS headers on errors too
+app.use((err, req, res, next) => {
+    // Set CORS headers
+    const origin = req.headers.origin;
+    res.setHeader('Access-Control-Allow-Origin', origin || '*');
+    res.setHeader('Access-Control-Allow-Credentials', 'true');
+    
+    console.error('Error:', err);
+    res.status(err.status || 500).json({
+        message: err.message || 'Internal server error',
+        error: process.env.NODE_ENV === 'production' ? {} : err
+    });
+});
 
 // --- Start Server ---
 const PORT = process.env.PORT || 3000;
