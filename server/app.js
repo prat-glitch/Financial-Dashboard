@@ -14,28 +14,31 @@ const budgetRoutes = require('./src/routes/budgetRoutes');
 const app = express();
 
 // --- Middlewares ---
-// Configure CORS for production
-const allowedOrigins = process.env.FRONTEND_URL 
-  ? process.env.FRONTEND_URL.split(',').map(url => url.trim())
-  : ['*'];
+// Manual CORS headers for Vercel compatibility
+app.use((req, res, next) => {
+  const origin = req.headers.origin;
+  
+  // Allow all origins for now (or specify your frontend URL)
+  res.setHeader('Access-Control-Allow-Origin', origin || '*');
+  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+  res.setHeader('Access-Control-Allow-Credentials', 'true');
+  
+  // Handle preflight requests
+  if (req.method === 'OPTIONS') {
+    return res.status(200).end();
+  }
+  
+  next();
+});
 
-const corsOptions = {
-  origin: function (origin, callback) {
-    // Allow requests with no origin (mobile apps, Postman, etc.)
-    if (!origin) return callback(null, true);
-    
-    if (allowedOrigins.includes('*') || allowedOrigins.indexOf(origin) !== -1) {
-      callback(null, true);
-    } else {
-      callback(null, true); // Allow all in production for now
-    }
-  },
+// Additional CORS middleware as backup
+app.use(cors({
+  origin: true,
   credentials: true,
-  optionsSuccessStatus: 200,
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization']
-};
-app.use(cors(corsOptions));
+  optionsSuccessStatus: 200
+}));
+
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
