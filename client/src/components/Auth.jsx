@@ -98,10 +98,6 @@ const Auth = ({ onLogin, isDarkMode }) => {
   const handleGoogleError = () => {
     setError("Google login failed. Please try again.");
   };
-    } finally {
-      setLoading(false);
-    }
-  };
 
   return (
     <div className={`min-h-screen flex items-center justify-center p-4 transition-colors duration-300 ${
