@@ -1,8 +1,12 @@
 const User = require('../models/usermodel');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
+const { OAuth2Client } = require('google-auth-library');
 
 const JWT_SECRET = process.env.JWT_SECRET || 'expense_tracker_secret_key_2024';
+const GOOGLE_CLIENT_ID = process.env.GOOGLE_CLIENT_ID;
+
+const googleClient = new OAuth2Client(GOOGLE_CLIENT_ID);
 
 // Generate JWT Token
 const generateToken = (userId) => {
@@ -106,7 +110,26 @@ const loginUser = async (req, res) => {
 // Google Authentication
 const googleAuth = async (req, res) => {
     try {
-        const { name, email, avatar, googleId } = req.body;
+        const { credential } = req.body;
+
+        if (!credential) {
+            return res.status(400).json({ message: 'No credential provided' });
+        }
+
+        // Verify Google ID token
+        let payload;
+        try {
+            const ticket = await googleClient.verifyIdToken({
+                idToken: credential,
+                audience: GOOGLE_CLIENT_ID,
+            });
+            payload = ticket.getPayload();
+        } catch (error) {
+            console.error('Google token verification failed:', error);
+            return res.status(401).json({ message: 'Invalid Google token' });
+        }
+
+        const { sub: googleId, email, name, picture } = payload;
 
         // Check if user exists
         let user = await User.findOne({ email: email.toLowerCase() });
@@ -116,7 +139,7 @@ const googleAuth = async (req, res) => {
             if (!user.googleId) {
                 user.googleId = googleId;
                 user.authProvider = 'google';
-                if (avatar && !user.avatar) user.avatar = avatar;
+                if (picture && !user.avatar) user.avatar = picture;
                 await user.save();
             }
         } else {
@@ -124,7 +147,7 @@ const googleAuth = async (req, res) => {
             user = await User.create({
                 name,
                 email: email.toLowerCase(),
-                avatar,
+                avatar: picture,
                 googleId,
                 authProvider: 'google'
             });
@@ -146,6 +169,7 @@ const googleAuth = async (req, res) => {
             }
         });
     } catch (error) {
+        console.error('Google authentication error:', error);
         res.status(500).json({ message: 'Google authentication failed', error: error.message });
     }
 };
