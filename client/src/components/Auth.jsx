@@ -4,6 +4,7 @@ import { useAuth } from "../context/AuthContext.jsx";
 import { GoogleLogin } from '@react-oauth/google';
 
 // Normalize API URL - remove trailing slash and ensure no double slashes
+// Updated: Jan 21, 2026 - Google Auth fix
 const API_BASE = (import.meta.env.VITE_API_URL || "http://localhost:3000/api").replace(/\/+$/, '');
 
 const Auth = ({ onLogin, isDarkMode }) => {
