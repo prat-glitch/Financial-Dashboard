@@ -6,6 +6,7 @@ import Profile from "./components/Profile.jsx";
 import ProfileOverview from "./components/ProfileOverview.jsx";
 import Budget from "./components/Budget.jsx";
 import Auth from "./components/Auth.jsx";
+import Sidebar, { MobileHeader, MobileOverlay } from "./components/Sidebar.jsx";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { useTheme } from "./context/ThemeContext.jsx";
 import { useAuth } from "./context/AuthContext.jsx";
@@ -80,6 +81,7 @@ function App() {
   const { isAuthenticated, loading } = useAuth();
   const [showSplash, setShowSplash] = useState(true);
   const [appReady, setAppReady] = useState(false);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   const handleSplashComplete = () => {
     setShowSplash(false);
@@ -94,6 +96,22 @@ function App() {
   return (
     <div className={`min-h-screen ${isDarkMode ? 'dark bg-slate-900' : 'bg-[#fafafa]'}`}>
       <BrowserRouter>
+        {isAuthenticated && (
+          <>
+            <MobileHeader 
+              isMobileMenuOpen={isMobileMenuOpen} 
+              setIsMobileMenuOpen={setIsMobileMenuOpen} 
+            />
+            <MobileOverlay 
+              isMobileMenuOpen={isMobileMenuOpen} 
+              setIsMobileMenuOpen={setIsMobileMenuOpen} 
+            />
+            <Sidebar 
+              isMobileMenuOpen={isMobileMenuOpen} 
+              setIsMobileMenuOpen={setIsMobileMenuOpen} 
+            />
+          </>
+        )}
         <Routes>
           {/* Public route */}
           <Route 

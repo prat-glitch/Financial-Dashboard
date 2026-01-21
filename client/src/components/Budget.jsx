@@ -10,7 +10,6 @@ import {
 } from "lucide-react";
 import { useTheme } from "../context/ThemeContext.jsx";
 import { useUser } from "../context/UserContext.jsx";
-import Sidebar, { MobileHeader, MobileOverlay } from "./Sidebar.jsx";
 
 const API_BASE = (import.meta.env.VITE_API_URL || "http://localhost:3000/api").replace(/\/+$/, '');
 
@@ -248,7 +247,6 @@ const Budget = () => {
   const { isDarkMode, toggleTheme } = useTheme();
   const { user } = useUser();
   const location = useLocation();
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   
@@ -438,26 +436,18 @@ const Budget = () => {
   };
 
   return (
-    <div className={`w-full min-h-screen flex transition-colors duration-300 ${isDarkMode ? 'bg-slate-900' : 'bg-[#f8f7fc]'}`}>
-
-      {/* MOBILE HEADER */}
-      <MobileHeader isMobileMenuOpen={isMobileMenuOpen} setIsMobileMenuOpen={setIsMobileMenuOpen} />
-
-      {/* SIDEBAR */}
-      <Sidebar isMobileMenuOpen={isMobileMenuOpen} setIsMobileMenuOpen={setIsMobileMenuOpen} />
-
-      {/* Mobile Overlay */}
-      <MobileOverlay isMobileMenuOpen={isMobileMenuOpen} setIsMobileMenuOpen={setIsMobileMenuOpen} />
-
-      {/* MAIN CONTENT */}
-      <main className="flex-1 md:ml-64 min-h-screen">
-        <div className="max-w-6xl mx-auto p-4 md:p-8">
+    <main className={`
+      w-full min-h-screen lg:ml-64 pb-24 lg:pb-0
+      transition-colors duration-300 
+      ${isDarkMode ? 'bg-slate-900' : 'bg-[#f8f7fc]'}
+    `}>
+      <div className="max-w-6xl mx-auto px-4 py-5 md:p-8">
           
           {/* Header */}
-          <div className="mb-8">
+          <div className="mb-6 md:mb-8">
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
               <div>
-                <h1 className={`text-2xl font-bold tracking-tight ${isDarkMode ? 'text-white' : 'text-slate-800'}`}>
+                <h1 className={`text-xl md:text-2xl font-bold tracking-tight ${isDarkMode ? 'text-white' : 'text-slate-800'}`}>
                   Monthly Budget
                 </h1>
                 <p className={`text-sm mt-1 ${isDarkMode ? 'text-slate-400' : 'text-slate-500'}`}>
@@ -972,8 +962,7 @@ const Budget = () => {
             </>
           )}
         </div>
-      </main>
-    </div>
+    </main>
   );
 };
 

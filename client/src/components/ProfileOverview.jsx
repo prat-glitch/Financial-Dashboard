@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React from "react";
 import { Link } from "react-router-dom";
 import {
     User,
@@ -12,12 +12,10 @@ import {
 
 import { useTheme } from "../context/ThemeContext.jsx";
 import { useUser } from "../context/UserContext.jsx";
-import Sidebar, { MobileHeader, MobileOverlay } from "./Sidebar.jsx";
 
 const ProfileOverview = () => {
     const { isDarkMode } = useTheme();
     const { user } = useUser();
-    const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
     const getInitials = (name) => {
         return name
@@ -47,19 +45,12 @@ const ProfileOverview = () => {
     ];
 
     return (
-        <div className={`w-full min-h-screen flex ${isDarkMode ? 'bg-slate-900' : 'bg-gray-50'}`}>
-            {/* MOBILE HEADER */}
-            <MobileHeader isMobileMenuOpen={isMobileMenuOpen} setIsMobileMenuOpen={setIsMobileMenuOpen} />
-
-            {/* SIDEBAR */}
-            <Sidebar isMobileMenuOpen={isMobileMenuOpen} setIsMobileMenuOpen={setIsMobileMenuOpen} />
-
-            {/* Mobile Overlay */}
-            <MobileOverlay isMobileMenuOpen={isMobileMenuOpen} setIsMobileMenuOpen={setIsMobileMenuOpen} />
-
-            {/* MAIN CONTENT */}
-            <main className="flex-1 md:ml-64 p-4 sm:p-6 lg:p-8 pt-20 md:pt-8">
-                <div className="max-w-3xl mx-auto">
+        <main className={`
+            w-full min-h-screen lg:ml-64 pb-24 lg:pb-0
+            p-4 sm:p-6 lg:p-8
+            ${isDarkMode ? 'bg-slate-900' : 'bg-gray-50'}
+        `}>
+            <div className="max-w-3xl mx-auto">
                     {/* Profile Header Card */}
                     <div className={`p-6 sm:p-8 rounded-2xl sm:rounded-3xl mb-6 shadow-lg ${isDarkMode ? 'bg-linear-to-br from-indigo-900 to-purple-900' : 'bg-linear-to-br from-indigo-600 to-purple-600'}`}>
                         <div className="flex flex-col sm:flex-row items-center gap-4 sm:gap-6">
@@ -132,8 +123,7 @@ const ProfileOverview = () => {
                         </div>
                     </div>
                 </div>
-            </main>
-        </div>
+        </main>
     );
 };
 

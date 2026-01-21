@@ -9,7 +9,6 @@ import {
 import { useTheme } from "../context/ThemeContext.jsx";
 import { useUser } from "../context/UserContext.jsx";
 import { useAuth } from "../context/AuthContext.jsx";
-import Sidebar, { MobileHeader, MobileOverlay } from "./Sidebar.jsx";
 
 const API_BASE = (import.meta.env.VITE_API_URL || "http://localhost:3000/api").replace(/\/+$/, '');
 
@@ -216,7 +215,6 @@ const TransactionItem = ({ tx, isDarkMode, formatDate }) => {
 const Dashboard = () => {
   const { isDarkMode, toggleTheme } = useTheme();
   const { user } = useUser();
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [loading, setLoading] = useState(true);
   const [stats, setStats] = useState({
@@ -290,126 +288,235 @@ const Dashboard = () => {
     : 10000;
 
   return (
-    <div className={`w-full min-h-screen flex transition-colors duration-300 ${isDarkMode ? 'bg-slate-900' : 'bg-[#f8f7fc]'}`}>
+    <main className={`
+      w-full min-h-screen lg:ml-64 pb-24 lg:pb-0
+      transition-colors duration-300 
+      ${isDarkMode ? 'bg-slate-900' : 'bg-[#f8f7fc]'}
+    `}>
+      
+      {/* TOP BAR - Desktop Only */}
+      <header className={`
+        hidden lg:block sticky top-0 z-30 px-4 md:px-6 lg:px-8 py-3 md:py-4 border-b
+        ${isDarkMode 
+          ? 'bg-slate-900/95 border-slate-800 backdrop-blur-xl' 
+          : 'bg-white/95 border-violet-100 backdrop-blur-xl'}
+      `}>
+        <div className="flex items-center justify-between gap-4 max-w-7xl mx-auto">
+          {/* Greeting */}
+          <div>
+            <h1 className={`text-lg xl:text-xl font-semibold ${isDarkMode ? 'text-white' : 'text-slate-800'}`}>
+              Hi, {user?.name?.split(' ')[0] || 'User'} 👋
+            </h1>
+            <p className={`text-xs md:text-sm ${isDarkMode ? 'text-slate-500' : 'text-slate-400'}`}>
+              Welcome back to your dashboard
+            </p>
+          </div>
 
-      {/* ======================= */}
-      {/* MOBILE HEADER */}
-      {/* ======================= */}
-      <MobileHeader isMobileMenuOpen={isMobileMenuOpen} setIsMobileMenuOpen={setIsMobileMenuOpen} />
-
-      {/* ======================= */}
-      {/* SIDEBAR */}
-      {/* ======================= */}
-      <Sidebar isMobileMenuOpen={isMobileMenuOpen} setIsMobileMenuOpen={setIsMobileMenuOpen} />
-
-      {/* Mobile Overlay */}
-      <MobileOverlay isMobileMenuOpen={isMobileMenuOpen} setIsMobileMenuOpen={setIsMobileMenuOpen} />
-
-      {/* ======================= */}
-      {/* MAIN CONTENT */}
-      {/* ======================= */}
-      <main className="flex-1 md:ml-64 min-h-screen flex flex-col">
-        
-        {/* TOP BAR */}
-        <header className={`
-          sticky top-0 z-30 px-3 sm:px-4 md:px-6 lg:px-8 py-3 md:py-4 border-b
-          ${isDarkMode 
-            ? 'bg-slate-900/95 border-slate-800 backdrop-blur-xl' 
-            : 'bg-white/95 border-violet-100 backdrop-blur-xl'}
-        `}>
-          <div className="flex items-center justify-between gap-2 sm:gap-3 md:gap-4 max-w-7xl mx-auto">
-            {/* Greeting */}
-            <div className="hidden lg:block">
-              <h1 className={`text-lg xl:text-xl font-semibold ${isDarkMode ? 'text-white' : 'text-slate-800'}`}>
-                Hi, {user?.name?.split(' ')[0] || 'User'} 👋
-              </h1>
-              <p className={`text-xs md:text-sm ${isDarkMode ? 'text-slate-500' : 'text-slate-400'}`}>
-                Welcome back to your dashboard
-              </p>
+          {/* Search Input */}
+          <div className="flex-1 max-w-md">
+            <div className={`
+              flex items-center gap-3 px-4 py-2.5 rounded-xl border
+              transition-all duration-200
+              ${isDarkMode 
+                ? 'bg-slate-800/50 border-slate-700 focus-within:border-violet-500/50' 
+                : 'bg-violet-50/50 border-violet-100 focus-within:border-violet-300 focus-within:bg-white'}
+            `}>
+              <Search size={18} className={isDarkMode ? 'text-slate-500' : 'text-violet-400'} />
+              <input
+                type="text"
+                placeholder="Search transactions..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className={`flex-1 bg-transparent outline-none text-sm ${isDarkMode ? 'text-white placeholder-slate-500' : 'text-slate-800 placeholder-slate-400'}`}
+              />
             </div>
+          </div>
 
-            {/* Search Input */}
-            <div className="flex-1 max-w-xs lg:max-w-md">
-              <div className={`
-                flex items-center gap-2 md:gap-3 px-3 md:px-4 py-2 md:py-2.5 rounded-lg md:rounded-xl border
-                transition-all duration-200
-                ${isDarkMode 
-                  ? 'bg-slate-800/50 border-slate-700 focus-within:border-violet-500/50' 
-                  : 'bg-violet-50/50 border-violet-100 focus-within:border-violet-300 focus-within:bg-white'}
-              `}>
-                <Search size={16} className={`${isDarkMode ? 'text-slate-500' : 'text-violet-400'} sm:w-[18px] sm:h-[18px]`} />
-                <input
-                  type="text"
-                  placeholder="Search..."
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  className={`flex-1 bg-transparent outline-none text-xs md:text-sm ${isDarkMode ? 'text-white placeholder-slate-500' : 'text-slate-800 placeholder-slate-400'}`}
-                />
+          {/* Actions */}
+          <div className="flex items-center gap-2">
+            <button
+              onClick={toggleTheme}
+              className={`w-10 h-10 rounded-xl flex items-center justify-center transition-all duration-200 ${isDarkMode ? 'hover:bg-slate-800 text-amber-400' : 'hover:bg-violet-100 text-slate-500'}`}
+            >
+              {isDarkMode ? <Sun size={20} /> : <Moon size={20} />}
+            </button>
+            <button className={`relative w-10 h-10 rounded-xl flex items-center justify-center transition-all duration-200 ${isDarkMode ? 'hover:bg-slate-800 text-slate-400' : 'hover:bg-violet-100 text-slate-500'}`}>
+              <Bell size={20} />
+              <span className="absolute top-2 right-2 w-2.5 h-2.5 bg-violet-500 rounded-full ring-2 ring-white dark:ring-slate-900" />
+            </button>
+            <Link to="/profile">
+              <div className={`w-10 h-10 rounded-xl overflow-hidden ring-2 transition-all duration-200 ${isDarkMode ? 'ring-slate-700 hover:ring-violet-500/50' : 'ring-violet-200 hover:ring-violet-400'}`}>
+                {user?.avatar ? (
+                  <img src={user.avatar} className="w-full h-full object-cover" alt="User" />
+                ) : (
+                  <div className="w-full h-full flex items-center justify-center text-sm font-medium bg-linear-to-br from-violet-400 to-purple-500 text-white">
+                    {getInitials(user?.name || "User")}
+                  </div>
+                )}
+              </div>
+            </Link>
+          </div>
+        </div>
+      </header>
+
+      {/* SCROLLABLE CONTENT */}
+      <div className="flex-1 overflow-y-auto">
+        <div className="max-w-7xl mx-auto">
+            
+            {/* Mobile: Compact padding, Desktop: Normal padding */}
+            <div className="px-4 py-4 md:p-6 lg:p-8 space-y-4 md:space-y-6">
+          
+            {/* ======================= */}
+            {/* MAIN BALANCE CARD - Featured */}
+            {/* ======================= */}
+            <div className={`
+              relative rounded-2xl sm:rounded-3xl p-5 sm:p-8 overflow-hidden
+              bg-linear-to-br from-violet-600 via-purple-600 to-indigo-700
+              shadow-xl shadow-purple-500/20
+            `}>
+              {/* Background decorative elements */}
+              <div className="absolute -right-12 -top-12 w-40 h-40 rounded-full bg-white/5" />
+              <div className="absolute right-8 bottom-8 w-32 h-32 rounded-full bg-white/5" />
+              <div className="absolute left-1/3 top-1/2 w-24 h-24 rounded-full bg-white/5" />
+              
+              <div className="relative z-10">
+                <div className="flex items-start justify-between mb-5">
+                  <div>
+                    <p className="text-white/70 text-xs sm:text-sm font-medium mb-2">Total Balance</p>
+                    <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold text-white tracking-tight">
+                      {loading ? "..." : formatCurrency(stats.balance)}
+                    </h2>
+                  </div>
+                  <button className="w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-white/10 backdrop-blur-sm flex items-center justify-center hover:bg-white/20 transition-colors">
+                    <svg className="w-5 h-5 sm:w-6 sm:h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                    </svg>
+                  </button>
+                </div>
+                
+                {/* Income/Expense Row */}
+                <div className="grid grid-cols-2 gap-3 sm:gap-4">
+                  <div className="bg-white/10 backdrop-blur-sm rounded-xl sm:rounded-2xl p-3 sm:p-4">
+                    <div className="flex items-center gap-2 mb-1.5 sm:mb-2">
+                      <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-lg bg-emerald-500/20 flex items-center justify-center">
+                        <ArrowDownLeft size={14} className="text-emerald-300 sm:w-4 sm:h-4" />
+                      </div>
+                      <span className="text-white/70 text-xs font-medium">Income</span>
+                    </div>
+                    <p className="text-white text-lg sm:text-xl font-bold">
+                      {loading ? "..." : formatCurrency(stats.monthlyIncome)}
+                    </p>
+                  </div>
+                  
+                  <div className="bg-white/10 backdrop-blur-sm rounded-xl sm:rounded-2xl p-3 sm:p-4">
+                    <div className="flex items-center gap-2 mb-1.5 sm:mb-2">
+                      <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-lg bg-rose-500/20 flex items-center justify-center">
+                        <ArrowUpRight size={14} className="text-rose-300 sm:w-4 sm:h-4" />
+                      </div>
+                      <span className="text-white/70 text-xs font-medium">Expense</span>
+                    </div>
+                    <p className="text-white text-lg sm:text-xl font-bold">
+                      {loading ? "..." : formatCurrency(stats.monthlyExpense)}
+                    </p>
+                  </div>
+                </div>
               </div>
             </div>
 
-            {/* Actions */}
-            <div className="flex items-center gap-1.5 sm:gap-2">
-              <button
-                onClick={toggleTheme}
-                className={`w-8 h-8 sm:w-9 sm:h-9 md:w-10 md:h-10 rounded-lg md:rounded-xl flex items-center justify-center transition-all duration-200 ${isDarkMode ? 'hover:bg-slate-800 text-amber-400' : 'hover:bg-violet-100 text-slate-500'}`}
-              >
-                {isDarkMode ? <Sun size={17} className="sm:w-[18px] sm:h-[18px] md:w-5 md:h-5" /> : <Moon size={17} className="sm:w-[18px] sm:h-[18px] md:w-5 md:h-5" />}
-              </button>
-              <button className={`hidden sm:flex relative w-8 h-8 sm:w-9 sm:h-9 md:w-10 md:h-10 rounded-lg md:rounded-xl items-center justify-center transition-all duration-200 ${isDarkMode ? 'hover:bg-slate-800 text-slate-400' : 'hover:bg-violet-100 text-slate-500'}`}>
-                <Bell size={17} className="sm:w-[18px] sm:h-[18px] md:w-5 md:h-5" />
-                <span className="absolute top-1.5 right-1.5 sm:top-2 sm:right-2 w-2 h-2 md:w-2.5 md:h-2.5 bg-violet-500 rounded-full ring-2 ring-white dark:ring-slate-900" />
-              </button>
-              <Link to="/profile">
-                <div className={`w-8 h-8 sm:w-9 sm:h-9 md:w-10 md:h-10 rounded-lg md:rounded-xl overflow-hidden ring-2 transition-all duration-200 ${isDarkMode ? 'ring-slate-700 hover:ring-violet-500/50' : 'ring-violet-200 hover:ring-violet-400'}`}>
-                  {user?.avatar ? (
-                    <img src={user.avatar} className="w-full h-full object-cover" alt="User" />
-                  ) : (
-                    <div className="w-full h-full flex items-center justify-center text-xs md:text-sm font-medium bg-linear-to-br from-violet-400 to-purple-500 text-white">
-                      {getInitials(user?.name || "User")}
-                    </div>
-                  )}
-                </div>
-              </Link>
-            </div>
-          </div>
-        </header>
-
-        {/* SCROLLABLE CONTENT */}
-        <div className="flex-1 overflow-y-auto p-4 md:p-6 lg:p-8">
-          <div className="max-w-7xl mx-auto space-y-6">
-          
             {/* ======================= */}
-            {/* SUMMARY CARDS */}
+            {/* ACTION BUTTONS */}
             {/* ======================= */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 lg:gap-5">
-              <DashboardCard
-                icon={Wallet}
-                title="Total Balance"
-                value={loading ? "..." : formatCurrency(stats.balance)}
-                isDarkMode={isDarkMode}
-                isMain={true}
-              />
-              <DashboardCard
-                icon={ArrowDownLeft}
-                title="Monthly Income"
-                value={loading ? "..." : formatCurrency(stats.monthlyIncome)}
-                color="emerald"
-                isDarkMode={isDarkMode}
-              />
-              <DashboardCard
-                icon={ArrowUpRight}
-                title="Monthly Expense"
-                value={loading ? "..." : formatCurrency(stats.monthlyExpense)}
-                color="rose"
-                isDarkMode={isDarkMode}
-              />
+            <div className="grid grid-cols-2 gap-3">
+              <button className={`
+                px-3 py-3.5 sm:px-4 sm:py-4 rounded-xl sm:rounded-2xl font-semibold text-sm
+                transition-all duration-200 hover:scale-[0.98] active:scale-95
+                ${isDarkMode 
+                  ? 'bg-rose-500/20 text-rose-400 hover:bg-rose-500/30' 
+                  : 'bg-rose-50 text-rose-600 hover:bg-rose-100'}
+              `}>
+                <span className="flex items-center justify-center gap-2">
+                  <span className="text-base sm:text-lg">−</span> Add Expense
+                </span>
+              </button>
+              
+              <button className={`
+                px-3 py-3.5 sm:px-4 sm:py-4 rounded-xl sm:rounded-2xl font-semibold text-sm
+                transition-all duration-200 hover:scale-[0.98] active:scale-95
+                ${isDarkMode 
+                  ? 'bg-emerald-500/20 text-emerald-400 hover:bg-emerald-500/30' 
+                  : 'bg-emerald-50 text-emerald-600 hover:bg-emerald-100'}
+              `}>
+                <span className="flex items-center justify-center gap-2">
+                  <span className="text-base sm:text-lg">+</span> Add Income
+                </span>
+              </button>
             </div>
 
             {/* ======================= */}
-            {/* ANALYTICS SECTION */}
+            {/* SPENDING BY CATEGORY */}
             {/* ======================= */}
-            <div className="grid grid-cols-1 lg:grid-cols-5 gap-4 lg:gap-5">
+            <div>
+              <div className="flex items-center justify-between mb-3 sm:mb-4">
+                <h2 className={`text-base sm:text-lg font-bold ${isDarkMode ? 'text-white' : 'text-slate-800'}`}>
+                  Spending by Category
+                </h2>
+              </div>
+              
+              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3">
+                {loading ? (
+                  <div className="col-span-full flex items-center justify-center py-8">
+                    <div className="animate-spin w-6 h-6 border-2 border-violet-500 border-t-transparent rounded-full" />
+                  </div>
+                ) : stats.categoryBreakdown?.length > 0 ? (
+                  stats.categoryBreakdown.slice(0, 5).map((cat) => {
+                    const Icon = categoryIcons[cat._id] || CreditCard;
+                    const color = categoryColors[cat._id] || "#6b7280";
+                    const total = stats.categoryBreakdown.reduce((sum, c) => sum + c.total, 0);
+                    const percentage = total > 0 ? ((cat.total / total) * 100).toFixed(0) : 0;
+                    
+                    return (
+                      <div
+                        key={cat._id}
+                        className={`
+                          p-3 sm:p-4 rounded-xl sm:rounded-2xl transition-all duration-200 cursor-pointer
+                          hover:scale-[0.98] active:scale-95
+                          ${isDarkMode 
+                            ? 'bg-slate-800/80' 
+                            : 'bg-white shadow-sm hover:shadow-md'}
+                        `}
+                      >
+                        <div
+                          className="w-12 h-12 sm:w-14 sm:h-14 rounded-xl sm:rounded-2xl mx-auto mb-2 sm:mb-3 flex items-center justify-center"
+                          style={{ backgroundColor: `${color}15` }}
+                        >
+                          <Icon size={20} style={{ color }} className="sm:w-6 sm:h-6" />
+                        </div>
+                        <h3 className={`text-xs sm:text-sm font-semibold text-center mb-0.5 sm:mb-1 truncate ${isDarkMode ? 'text-white' : 'text-slate-800'}`}>
+                          {cat._id}
+                        </h3>
+                        <p className={`text-base sm:text-lg font-bold text-center mb-0.5 ${isDarkMode ? 'text-violet-400' : 'text-violet-600'}`}>
+                          ₹{cat.total.toLocaleString()}
+                        </p>
+                        <p className={`text-xs text-center font-medium ${isDarkMode ? 'text-rose-400' : 'text-rose-500'}`}>
+                          {percentage}%
+                        </p>
+                      </div>
+                    );
+                  })
+                ) : (
+                  <div className="col-span-full text-center py-8">
+                    <PieChart size={40} className={isDarkMode ? 'text-slate-700 mx-auto' : 'text-violet-200 mx-auto'} />
+                    <p className={`text-sm mt-3 ${isDarkMode ? 'text-slate-500' : 'text-slate-400'}`}>No spending data</p>
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* ======================= */}
+            {/* ANALYTICS SECTION (Desktop Only) */}
+            {/* ======================= */}
+            <div className="hidden lg:grid grid-cols-1 lg:grid-cols-5 gap-4 lg:gap-5">
               
               {/* Bar Chart - Monthly Expenses */}
               <ChartCard 
@@ -521,80 +628,94 @@ const Dashboard = () => {
             {/* ======================= */}
             {/* RECENT TRANSACTIONS */}
             {/* ======================= */}
-            <div className={`rounded-2xl overflow-hidden ${isDarkMode ? 'bg-slate-800/80' : 'bg-white shadow-sm'}`}>
-              {/* Header */}
-              <div className={`px-5 py-4 border-b flex items-center justify-between ${isDarkMode ? 'border-slate-700/50' : 'border-violet-100'}`}>
-                <div>
-                  <h3 className={`text-base font-semibold ${isDarkMode ? 'text-white' : 'text-slate-800'}`}>Recent Transactions</h3>
-                  <p className={`text-sm mt-0.5 ${isDarkMode ? 'text-slate-500' : 'text-slate-400'}`}>Your latest 5 transactions</p>
-                </div>
+            <div>
+              <div className="flex items-center justify-between mb-4">
+                <h2 className={`text-lg font-bold ${isDarkMode ? 'text-white' : 'text-slate-800'}`}>
+                  Recent Transactions
+                </h2>
                 <Link 
                   to="/all-transactions"
                   className={`
-                    flex items-center gap-1.5 px-4 py-2 rounded-xl text-sm font-medium
-                    transition-all duration-200
-                    ${isDarkMode 
-                      ? 'text-violet-400 hover:text-violet-300 hover:bg-violet-500/10' 
-                      : 'text-violet-600 hover:text-violet-700 hover:bg-violet-50'}
+                    text-sm font-semibold
+                    ${isDarkMode ? 'text-violet-400 hover:text-violet-300' : 'text-violet-600 hover:text-violet-700'}
                   `}
                 >
                   View All
-                  <ChevronRight size={16} />
                 </Link>
               </div>
-
-              {/* Table Header - Hidden on mobile */}
-              <div className={`hidden md:flex items-center px-5 py-3 text-xs font-medium uppercase tracking-wider ${isDarkMode ? 'bg-slate-700/30 text-slate-500' : 'bg-violet-50/50 text-slate-400'}`}>
-                <div className="flex-1 flex items-center gap-4">
-                  <span className="w-11" />
-                  <span>Description</span>
-                </div>
-                <span className="w-28 text-center hidden sm:block">Category</span>
-                <span className="w-20 text-center hidden lg:block">Method</span>
-                <span className="w-24 text-right">Amount</span>
-              </div>
-
-              {/* Transaction Rows */}
-              <div className={`divide-y ${isDarkMode ? 'divide-slate-700/30' : 'divide-violet-100/50'}`}>
-                {loading ? (
-                  <div className="px-5 py-16 text-center">
-                    <div className="animate-spin w-7 h-7 border-2 border-violet-500 border-t-transparent rounded-full mx-auto" />
-                    <p className={`text-sm mt-4 ${isDarkMode ? 'text-slate-500' : 'text-slate-400'}`}>Loading transactions...</p>
-                  </div>
-                ) : stats.recentTransactions?.length > 0 ? (
-                  stats.recentTransactions.slice(0, 5).map((tx) => (
-                    <TransactionItem key={tx._id} tx={tx} isDarkMode={isDarkMode} formatDate={formatDate} />
-                  ))
-                ) : (
-                  <div className="px-5 py-16 text-center">
-                    <div className={`w-14 h-14 rounded-2xl mx-auto mb-4 flex items-center justify-center ${isDarkMode ? 'bg-slate-700' : 'bg-violet-100'}`}>
-                      <List size={28} className={isDarkMode ? 'text-slate-500' : 'text-violet-400'} />
+              
+              <div className={`rounded-2xl overflow-hidden ${isDarkMode ? 'bg-slate-800/80' : 'bg-white shadow-sm'}`}>
+                {/* Transaction Rows */}
+                <div className={`divide-y ${isDarkMode ? 'divide-slate-700/30' : 'divide-violet-100/50'}`}>
+                  {loading ? (
+                    <div className="px-5 py-16 text-center">
+                      <div className="animate-spin w-6 h-6 mx-auto border-2 border-violet-500 border-t-transparent rounded-full" />
                     </div>
-                    <p className={`font-medium ${isDarkMode ? 'text-slate-400' : 'text-slate-500'}`}>No transactions yet</p>
-                    <p className={`text-sm mt-1 ${isDarkMode ? 'text-slate-500' : 'text-slate-400'}`}>
-                      Start tracking your expenses
-                    </p>
-                    <Link 
-                      to="/all-transactions" 
-                      className={`
-                        inline-flex items-center gap-1 text-sm font-medium mt-4 px-5 py-2.5 rounded-xl
-                        transition-all duration-200
-                        ${isDarkMode 
-                          ? 'bg-violet-600 text-white hover:bg-violet-500' 
-                          : 'bg-violet-600 text-white hover:bg-violet-700 shadow-lg shadow-violet-500/25'}
-                      `}
-                    >
-                      Add Transaction
-                      <ChevronRight size={14} />
-                    </Link>
-                  </div>
-                )}
+                  ) : stats.recentTransactions?.length > 0 ? (
+                    stats.recentTransactions.slice(0, 5).map((tx) => {
+                      const Icon = categoryIcons[tx.category] || CreditCard;
+                      const color = categoryColors[tx.category] || "#6b7280";
+                      
+                      return (
+                        <div
+                          key={tx._id}
+                          className={`
+                            px-4 py-4 flex items-center gap-3 cursor-pointer
+                            transition-all duration-200
+                            ${isDarkMode 
+                              ? 'hover:bg-slate-700/50 active:bg-slate-700' 
+                              : 'hover:bg-violet-50/50 active:bg-violet-50'}
+                          `}
+                        >
+                          {/* Icon */}
+                          <div
+                            className="w-12 h-12 rounded-2xl flex items-center justify-center shrink-0"
+                            style={{ backgroundColor: `${color}15` }}
+                          >
+                            <Icon size={20} style={{ color }} />
+                          </div>
+                          
+                          {/* Description & Date */}
+                          <div className="flex-1 min-w-0">
+                            <p className={`font-semibold text-sm truncate ${isDarkMode ? 'text-white' : 'text-slate-800'}`}>
+                              {tx.type === "income" ? "income" : tx.name}
+                            </p>
+                            <p className={`text-xs mt-0.5 ${isDarkMode ? 'text-slate-500' : 'text-slate-400'}`}>
+                              {tx.category} • {formatDate(tx.date)}
+                            </p>
+                          </div>
+
+                          {/* Amount + Plus Button */}
+                          <div className="flex items-center gap-2">
+                            <p className={`font-bold text-base shrink-0 ${tx.type === "income" ? 'text-emerald-500' : (isDarkMode ? 'text-white' : 'text-slate-800')}`}>
+                              {tx.type === "income" ? '+' : ''}₹{tx.amount?.toLocaleString()}
+                            </p>
+                            <button className={`
+                              w-10 h-10 rounded-xl flex items-center justify-center shrink-0
+                              ${isDarkMode ? 'bg-violet-500/20 hover:bg-violet-500/30' : 'bg-violet-100 hover:bg-violet-200'}
+                              transition-colors
+                            `}>
+                              <svg className={`w-5 h-5 ${isDarkMode ? 'text-violet-400' : 'text-violet-600'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                              </svg>
+                            </button>
+                          </div>
+                        </div>
+                      );
+                    })
+                  ) : (
+                    <div className="px-5 py-16 text-center">
+                      <List size={40} className={isDarkMode ? 'text-slate-700 mx-auto' : 'text-violet-200 mx-auto'} />
+                      <p className={`text-sm mt-3 ${isDarkMode ? 'text-slate-500' : 'text-slate-400'}`}>No transactions yet</p>
+                    </div>
+                  )}
+                </div>
               </div>
             </div>
           </div>
         </div>
-      </main>
-    </div>
+      </div>
+    </main>
   );
 };
 

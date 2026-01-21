@@ -9,7 +9,6 @@ import {
 import { Link } from "react-router-dom";
 import { useTheme } from "../context/ThemeContext.jsx";
 import { useUser } from "../context/UserContext.jsx";
-import Sidebar, { MobileHeader, MobileOverlay } from "./Sidebar.jsx";
 
 const API_BASE = (import.meta.env.VITE_API_URL || "http://localhost:3000/api").replace(/\/+$/, '');
 
@@ -117,7 +116,6 @@ const DropdownFilter = ({ label, value, options, onChange, icon: Icon, isDarkMod
 const AllTransactions = () => {
   const { isDarkMode, toggleTheme } = useTheme();
   const { user } = useUser();
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("All");
   const [selectedMethod, setSelectedMethod] = useState("All");
@@ -344,52 +342,44 @@ const AllTransactions = () => {
   };
 
   return (
-    <div className={`w-full min-h-screen flex flex-col md:flex-row transition-colors duration-300 ${isDarkMode ? 'bg-slate-900' : 'bg-[#f8f7fc]'}`}>
-
-      {/* MOBILE HEADER */}
-      <MobileHeader isMobileMenuOpen={isMobileMenuOpen} setIsMobileMenuOpen={setIsMobileMenuOpen} />
-
-      {/* SIDEBAR */}
-      <Sidebar isMobileMenuOpen={isMobileMenuOpen} setIsMobileMenuOpen={setIsMobileMenuOpen} />
-
-      {/* Mobile Overlay */}
-      <MobileOverlay isMobileMenuOpen={isMobileMenuOpen} setIsMobileMenuOpen={setIsMobileMenuOpen} />
-
-      {/* MAIN CONTENT */}
-      <main className="flex-1 md:ml-64 min-h-screen">
-        {/* Top Header */}
-        <div className={`px-4 sm:px-5 md:px-6 py-3 md:py-4 flex items-center justify-between border-b sticky top-0 z-30 ${isDarkMode ? 'bg-slate-900/90 border-slate-800 backdrop-blur-xl' : 'bg-white/95 border-violet-100'}`}>
-          <div />
-          <div className="flex items-center gap-2 sm:gap-3">
-            <button
-              onClick={toggleTheme}
-              className={`w-8 h-8 sm:w-9 sm:h-9 rounded-lg flex items-center justify-center transition-colors ${isDarkMode ? 'bg-slate-800 text-amber-400 hover:bg-slate-700' : 'bg-violet-100 text-slate-600 hover:bg-violet-200'}`}
-            >
-              {isDarkMode ? <Sun size={16} className="sm:w-[18px] sm:h-[18px]" /> : <Moon size={16} className="sm:w-[18px] sm:h-[18px]" />}
-            </button>
-            <div className="hidden sm:block relative cursor-pointer">
-              <Bell size={18} className={`${isDarkMode ? 'text-slate-400' : 'text-slate-500'} md:w-5 md:h-5`} />
-              <span className="absolute -top-1 -right-1 w-2 h-2 bg-violet-500 rounded-full" />
-            </div>
-            <Link to="/profile">
-              <div className={`w-8 h-8 sm:w-9 sm:h-9 rounded-lg overflow-hidden ring-2 ${isDarkMode ? 'ring-slate-700' : 'ring-violet-200'}`}>
-                {user?.avatar ? (
-                  <img src={user.avatar} className="w-full h-full object-cover" alt="User" />
-                ) : (
-                  <div className="w-full h-full bg-linear-to-br from-violet-400 to-purple-500 flex items-center justify-center text-white text-xs font-medium">
-                    {getInitials(user?.name || "User")}
-                  </div>
-                )}
-              </div>
-            </Link>
+    <main className={`
+      w-full min-h-screen lg:ml-64 pb-24 lg:pb-0
+      transition-colors duration-300 
+      ${isDarkMode ? 'bg-slate-900' : 'bg-[#f8f7fc]'}
+    `}>
+      {/* Top Header - Desktop Only */}
+      <div className={`hidden lg:flex px-6 py-4 items-center justify-between border-b sticky top-0 z-30 ${isDarkMode ? 'bg-slate-900/90 border-slate-800 backdrop-blur-xl' : 'bg-white/95 border-violet-100'}`}>
+        <div />
+        <div className="flex items-center gap-3">
+          <button
+            onClick={toggleTheme}
+            className={`w-9 h-9 rounded-lg flex items-center justify-center transition-colors ${isDarkMode ? 'bg-slate-800 text-amber-400 hover:bg-slate-700' : 'bg-violet-100 text-slate-600 hover:bg-violet-200'}`}
+          >
+            {isDarkMode ? <Sun size={18} /> : <Moon size={18} />}
+          </button>
+          <div className="relative cursor-pointer">
+            <Bell size={20} className={isDarkMode ? 'text-slate-400' : 'text-slate-500'} />
+            <span className="absolute -top-1 -right-1 w-2 h-2 bg-violet-500 rounded-full" />
           </div>
+          <Link to="/profile">
+            <div className={`w-9 h-9 rounded-lg overflow-hidden ring-2 ${isDarkMode ? 'ring-slate-700' : 'ring-violet-200'}`}>
+              {user?.avatar ? (
+                <img src={user.avatar} className="w-full h-full object-cover" alt="User" />
+              ) : (
+                <div className="w-full h-full bg-linear-to-br from-violet-400 to-purple-500 flex items-center justify-center text-white text-xs font-medium">
+                  {getInitials(user?.name || "User")}
+                </div>
+              )}
+            </div>
+          </Link>
         </div>
+      </div>
 
-        <div className="p-4 sm:p-5 md:p-6 space-y-4 md:space-y-5">
+      <div className="px-4 py-5 sm:p-5 md:p-6 space-y-4 md:space-y-5">
           {/* Page Header */}
           <div className="flex items-start justify-between flex-wrap gap-3 sm:gap-4">
             <div>
-              <h2 className={`text-lg sm:text-xl md:text-2xl font-semibold tracking-tight ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>
+              <h2 className={`text-xl md:text-2xl font-bold tracking-tight ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>
                 Transactions
               </h2>
               <p className={`text-xs sm:text-sm mt-0.5 ${isDarkMode ? 'text-slate-500' : 'text-slate-500'}`}>
@@ -554,7 +544,6 @@ const AllTransactions = () => {
             </div>
           </div>
         </div>
-      </main>
 
       {/* Add Modal */}
       {showModal && (
@@ -647,7 +636,7 @@ const AllTransactions = () => {
           </div>
         </div>
       )}
-    </div>
+    </main>
   );
 };
 

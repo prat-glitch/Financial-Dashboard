@@ -23,7 +23,6 @@ import {
 } from "lucide-react";
 import { useTheme } from "../context/ThemeContext.jsx";
 import { useUser } from "../context/UserContext.jsx";
-import Sidebar, { MobileHeader, MobileOverlay } from "./Sidebar.jsx";
 
 const Profile = () => {
     const { isDarkMode, toggleTheme } = useTheme();
@@ -32,7 +31,6 @@ const Profile = () => {
     const [showPassword, setShowPassword] = useState(false);
     const [showNewPassword, setShowNewPassword] = useState(false);
     const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-    const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
     // Local User Info State for editing
     const [localUserInfo, setLocalUserInfo] = useState({ ...user });
@@ -326,19 +324,12 @@ const Profile = () => {
     };
 
     return (
-        <div className={`w-full min-h-screen flex ${isDarkMode ? 'dark bg-slate-900' : 'bg-[#f8f7fc]'}`}>
-            {/* MOBILE HEADER */}
-            <MobileHeader isMobileMenuOpen={isMobileMenuOpen} setIsMobileMenuOpen={setIsMobileMenuOpen} />
-
-            {/* SIDEBAR */}
-            <Sidebar isMobileMenuOpen={isMobileMenuOpen} setIsMobileMenuOpen={setIsMobileMenuOpen} />
-
-            {/* Mobile Overlay */}
-            <MobileOverlay isMobileMenuOpen={isMobileMenuOpen} setIsMobileMenuOpen={setIsMobileMenuOpen} />
-
-            {/* MAIN CONTENT */}
-            <main className="flex-1 md:ml-64 p-3 sm:p-4 md:p-6 lg:p-8 pt-20 md:pt-8">
-                <div className="max-w-5xl mx-auto">
+        <main className={`
+            w-full min-h-screen lg:ml-64 pb-24 lg:pb-0
+            p-3 sm:p-4 md:p-6 lg:p-8
+            ${isDarkMode ? 'dark bg-slate-900' : 'bg-[#f8f7fc]'}
+        `}>
+            <div className="max-w-5xl mx-auto">
                     {/* Header */}
                     <div className="mb-5 sm:mb-6 md:mb-10">
                         <p className={`text-[9px] sm:text-[10px] font-black uppercase tracking-[0.15em] sm:tracking-[0.2em] md:tracking-[0.4em] ${isDarkMode ? 'text-violet-400' : 'text-violet-500'}`}>Configuration Hub</p>
@@ -985,7 +976,6 @@ const Profile = () => {
                         )}
                     </div>
                 </div>
-            </main>
 
             {/* Category Modal */}
             {showCategoryModal && (
@@ -1161,7 +1151,7 @@ const Profile = () => {
                     </div>
                 </div>
             )}
-        </div>
+        </main>
     );
 };
 
