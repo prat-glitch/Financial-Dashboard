@@ -1,6 +1,6 @@
-import { OAuth2Client } from 'google-auth-library';
-import mongoose from 'mongoose';
-import jwt from 'jsonwebtoken';
+const { OAuth2Client } = require('google-auth-library');
+const mongoose = require('mongoose');
+const jwt = require('jsonwebtoken');
 
 // ==========================================
 // MONGODB CONNECTION (Serverless-optimized)
@@ -15,6 +15,7 @@ async function connectToDatabase() {
   const MONGO_URI = process.env.MONGO_URI;
   
   if (!MONGO_URI) {
+    console.error('MONGO_URI is not defined');
     throw new Error('MONGO_URI environment variable is not defined');
   }
 
@@ -23,9 +24,10 @@ async function connectToDatabase() {
       bufferCommands: false,
       maxPoolSize: 10,
     });
+    console.log('MongoDB connected successfully');
     return cachedConnection;
   } catch (error) {
-    console.error('MongoDB connection error:', error);
+    console.error('MongoDB connection error:', error.message);
     throw error;
   }
 }
@@ -64,6 +66,7 @@ async function verifyGoogleToken(credential) {
   const GOOGLE_CLIENT_ID = process.env.GOOGLE_CLIENT_ID;
   
   if (!GOOGLE_CLIENT_ID) {
+    console.error('GOOGLE_CLIENT_ID is not defined');
     throw new Error('GOOGLE_CLIENT_ID environment variable is not defined');
   }
 
@@ -76,6 +79,7 @@ async function verifyGoogleToken(credential) {
     });
     
     const payload = ticket.getPayload();
+    console.log('Google token verified for:', payload.email);
     
     return {
       googleId: payload.sub,
@@ -85,7 +89,7 @@ async function verifyGoogleToken(credential) {
       emailVerified: payload.email_verified,
     };
   } catch (error) {
-    console.error('Google token verification failed:', error);
+    console.error('Google token verification failed:', error.message);
     throw new Error('Invalid Google token');
   }
 }
@@ -97,6 +101,7 @@ function generateJWT(user) {
   const JWT_SECRET = process.env.JWT_SECRET;
   
   if (!JWT_SECRET) {
+    console.error('JWT_SECRET is not defined');
     throw new Error('JWT_SECRET environment variable is not defined');
   }
 
@@ -112,28 +117,32 @@ function generateJWT(user) {
 }
 
 // ==========================================
-// ALLOWED ORIGINS
+// GET CORS ORIGIN
 // ==========================================
-const ALLOWED_ORIGINS = [
-  'https://financial-dashboard-wwwp.vercel.app',
-  'https://expense-tracker-react.vercel.app',
-  'http://localhost:5173',
-  'http://localhost:5174',
-];
-
 function getCorsOrigin(requestOrigin) {
-  if (ALLOWED_ORIGINS.includes(requestOrigin)) {
+  // Use FRONTEND_URL from env if available
+  const frontendUrl = process.env.FRONTEND_URL;
+  
+  const allowedOrigins = [
+    frontendUrl,
+    'https://financial-dashboard-wwwp.vercel.app',
+    'http://localhost:5173',
+    'http://localhost:5174',
+  ].filter(Boolean);
+
+  if (allowedOrigins.includes(requestOrigin)) {
     return requestOrigin;
   }
-  // Default to production URL
-  return ALLOWED_ORIGINS[0];
+  
+  // Return the FRONTEND_URL or first allowed origin
+  return frontendUrl || allowedOrigins[0];
 }
 
 // ==========================================
 // MAIN HANDLER
 // ==========================================
-export default async function handler(req, res) {
-  const origin = req.headers.origin || '';
+module.exports = async function handler(req, res) {
+  const origin = req.headers.origin || req.headers.referer || '';
   const allowedOrigin = getCorsOrigin(origin);
 
   // --- CORS HEADERS ---
@@ -144,6 +153,7 @@ export default async function handler(req, res) {
 
   // --- HANDLE PREFLIGHT ---
   if (req.method === 'OPTIONS') {
+    console.log('Handling OPTIONS preflight request');
     return res.status(200).end();
   }
 
@@ -155,22 +165,30 @@ export default async function handler(req, res) {
     });
   }
 
+  console.log('Google auth request received');
+
   try {
     // Get credential from request body
     const { credential } = req.body;
 
     if (!credential) {
+      console.error('No credential provided in request body');
       return res.status(400).json({ 
         success: false, 
         message: 'Google credential is required' 
       });
     }
 
+    console.log('Verifying Google token...');
+    
     // Verify Google token
     const googleUser = await verifyGoogleToken(credential);
+    console.log('Google user verified:', googleUser.email);
 
     // Connect to MongoDB
+    console.log('Connecting to MongoDB...');
     await connectToDatabase();
+    console.log('MongoDB connected');
 
     // Find or create user
     let user = await User.findOne({ 
@@ -181,6 +199,7 @@ export default async function handler(req, res) {
     });
 
     if (user) {
+      console.log('Existing user found:', user.email);
       // Update existing user with Google info
       user.googleId = googleUser.googleId;
       user.authProvider = 'google';
@@ -192,6 +211,7 @@ export default async function handler(req, res) {
       }
       await user.save();
     } else {
+      console.log('Creating new user:', googleUser.email);
       // Create new user
       user = await User.create({
         name: googleUser.name,
@@ -211,18 +231,20 @@ export default async function handler(req, res) {
       });
     }
 
+    console.log('Generating JWT...');
     // Generate JWT
     const token = generateJWT(user);
 
     // Set HttpOnly cookie
+    const isProduction = process.env.NODE_ENV === 'production';
     const cookieOptions = [
       `token=${token}`,
       'HttpOnly',
-      'Secure',
+      isProduction ? 'Secure' : '',
       'SameSite=None',
       'Path=/',
-      `Max-Age=${7 * 24 * 60 * 60}`, // 7 days in seconds
-    ].join('; ');
+      `Max-Age=${7 * 24 * 60 * 60}`,
+    ].filter(Boolean).join('; ');
 
     res.setHeader('Set-Cookie', cookieOptions);
 
@@ -237,6 +259,8 @@ export default async function handler(req, res) {
       authProvider: user.authProvider,
     };
 
+    console.log('Google auth successful for:', user.email);
+
     return res.status(200).json({
       success: true,
       message: 'Google authentication successful',
@@ -245,26 +269,35 @@ export default async function handler(req, res) {
     });
 
   } catch (error) {
-    console.error('Google auth error:', error);
+    console.error('Google auth error:', error.message);
+    console.error('Full error:', error);
     
     // Handle specific errors
     if (error.message === 'Invalid Google token') {
       return res.status(401).json({ 
         success: false, 
-        message: 'Invalid or expired Google token' 
+        message: 'Invalid or expired Google token. Please try again.' 
       });
     }
 
     if (error.message.includes('environment variable')) {
       return res.status(500).json({ 
         success: false, 
-        message: 'Server configuration error' 
+        message: 'Server configuration error. Please contact support.' 
+      });
+    }
+
+    if (error.message.includes('duplicate key')) {
+      return res.status(409).json({ 
+        success: false, 
+        message: 'An account with this email already exists.' 
       });
     }
 
     return res.status(500).json({ 
       success: false, 
-      message: 'Authentication failed. Please try again.' 
+      message: 'Authentication failed. Please try again.',
+      error: process.env.NODE_ENV !== 'production' ? error.message : undefined
     });
   }
-}
+};

@@ -2,7 +2,6 @@
   "name": "expense-tracker-api",
   "version": "1.0.0",
   "description": "Expense Tracker API - Vercel Serverless Functions",
-  "type": "module",
   "scripts": {
     "dev": "vercel dev"
   },
