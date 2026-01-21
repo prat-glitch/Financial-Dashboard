@@ -358,21 +358,21 @@ const AllTransactions = () => {
       {/* MAIN CONTENT */}
       <main className="flex-1 md:ml-64 min-h-screen">
         {/* Top Header */}
-        <div className={`px-5 md:px-6 py-4 flex items-center justify-between border-b sticky top-0 z-30 ${isDarkMode ? 'bg-slate-900/90 border-slate-800 backdrop-blur-xl' : 'bg-white/95 border-violet-100'}`}>
+        <div className={`px-4 sm:px-5 md:px-6 py-3 md:py-4 flex items-center justify-between border-b sticky top-0 z-30 ${isDarkMode ? 'bg-slate-900/90 border-slate-800 backdrop-blur-xl' : 'bg-white/95 border-violet-100'}`}>
           <div />
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2 sm:gap-3">
             <button
               onClick={toggleTheme}
-              className={`w-9 h-9 rounded-lg flex items-center justify-center transition-colors ${isDarkMode ? 'bg-slate-800 text-amber-400 hover:bg-slate-700' : 'bg-violet-100 text-slate-600 hover:bg-violet-200'}`}
+              className={`w-8 h-8 sm:w-9 sm:h-9 rounded-lg flex items-center justify-center transition-colors ${isDarkMode ? 'bg-slate-800 text-amber-400 hover:bg-slate-700' : 'bg-violet-100 text-slate-600 hover:bg-violet-200'}`}
             >
-              {isDarkMode ? <Sun size={18} /> : <Moon size={18} />}
+              {isDarkMode ? <Sun size={16} className="sm:w-[18px] sm:h-[18px]" /> : <Moon size={16} className="sm:w-[18px] sm:h-[18px]" />}
             </button>
-            <div className="relative cursor-pointer">
-              <Bell size={20} className={isDarkMode ? 'text-slate-400' : 'text-slate-500'} />
+            <div className="hidden sm:block relative cursor-pointer">
+              <Bell size={18} className={`${isDarkMode ? 'text-slate-400' : 'text-slate-500'} md:w-5 md:h-5`} />
               <span className="absolute -top-1 -right-1 w-2 h-2 bg-violet-500 rounded-full" />
             </div>
             <Link to="/profile">
-              <div className={`w-9 h-9 rounded-lg overflow-hidden ring-2 ${isDarkMode ? 'ring-slate-700' : 'ring-violet-200'}`}>
+              <div className={`w-8 h-8 sm:w-9 sm:h-9 rounded-lg overflow-hidden ring-2 ${isDarkMode ? 'ring-slate-700' : 'ring-violet-200'}`}>
                 {user?.avatar ? (
                   <img src={user.avatar} className="w-full h-full object-cover" alt="User" />
                 ) : (
@@ -385,68 +385,69 @@ const AllTransactions = () => {
           </div>
         </div>
 
-        <div className="p-5 md:p-6 space-y-5">
+        <div className="p-4 sm:p-5 md:p-6 space-y-4 md:space-y-5">
           {/* Page Header */}
-          <div className="flex items-start justify-between flex-wrap gap-4">
+          <div className="flex items-start justify-between flex-wrap gap-3 sm:gap-4">
             <div>
-              <h2 className={`text-xl md:text-2xl font-semibold tracking-tight ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>
+              <h2 className={`text-lg sm:text-xl md:text-2xl font-semibold tracking-tight ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>
                 Transactions
               </h2>
-              <p className={`text-sm mt-0.5 ${isDarkMode ? 'text-slate-500' : 'text-slate-500'}`}>
+              <p className={`text-xs sm:text-sm mt-0.5 ${isDarkMode ? 'text-slate-500' : 'text-slate-500'}`}>
                 Manage your financial records
               </p>
             </div>
 
             <button
               onClick={() => setShowModal(true)}
-              className={`flex items-center gap-2 px-4 py-2.5 rounded-lg font-medium text-sm transition-colors ${isDarkMode ? 'bg-slate-800 text-white hover:bg-slate-700' : 'bg-slate-900 text-white hover:bg-slate-800'}`}
+              className={`flex items-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-2 sm:py-2.5 rounded-lg font-medium text-xs sm:text-sm transition-colors ${isDarkMode ? 'bg-slate-800 text-white hover:bg-slate-700' : 'bg-slate-900 text-white hover:bg-slate-800'}`}
             >
-              <Plus size={16} />
-              Add New
+              <Plus size={14} className="sm:w-4 sm:h-4" />
+              <span className="hidden xs:inline">Add New</span>
+              <span className="xs:hidden">Add</span>
             </button>
           </div>
 
           {/* Summary Cards */}
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-            <div className={`rounded-xl p-4 border transition-colors ${isDarkMode ? 'bg-slate-800/50 border-slate-700/50' : 'bg-white border-slate-200/60'}`}>
-              <p className={`text-xs font-medium uppercase tracking-wide mb-1 ${isDarkMode ? 'text-slate-500' : 'text-slate-500'}`}>Income</p>
-              <p className="text-xl font-semibold text-emerald-600">₹{totalIncome.toLocaleString()}</p>
+          <div className="grid grid-cols-1 xs:grid-cols-2 sm:grid-cols-3 gap-3 sm:gap-4">
+            <div className={`rounded-lg sm:rounded-xl p-3 sm:p-4 border transition-colors ${isDarkMode ? 'bg-slate-800/50 border-slate-700/50' : 'bg-white border-slate-200/60'}`}>
+              <p className={`text-[10px] sm:text-xs font-medium uppercase tracking-wide mb-1 ${isDarkMode ? 'text-slate-500' : 'text-slate-500'}`}>Income</p>
+              <p className="text-lg sm:text-xl font-semibold text-emerald-600">₹{totalIncome.toLocaleString()}</p>
             </div>
-            <div className={`rounded-xl p-4 border transition-colors ${isDarkMode ? 'bg-slate-800/50 border-slate-700/50' : 'bg-white border-slate-200/60'}`}>
-              <p className={`text-xs font-medium uppercase tracking-wide mb-1 ${isDarkMode ? 'text-slate-500' : 'text-slate-500'}`}>Expense</p>
-              <p className="text-xl font-semibold text-rose-600">₹{totalExpense.toLocaleString()}</p>
+            <div className={`rounded-lg sm:rounded-xl p-3 sm:p-4 border transition-colors ${isDarkMode ? 'bg-slate-800/50 border-slate-700/50' : 'bg-white border-slate-200/60'}`}>
+              <p className={`text-[10px] sm:text-xs font-medium uppercase tracking-wide mb-1 ${isDarkMode ? 'text-slate-500' : 'text-slate-500'}`}>Expense</p>
+              <p className="text-lg sm:text-xl font-semibold text-rose-600">₹{totalExpense.toLocaleString()}</p>
             </div>
-            <div className={`rounded-xl p-4 border transition-colors ${isDarkMode ? 'bg-slate-800/50 border-slate-700/50' : 'bg-white border-slate-200/60'}`}>
-              <p className={`text-xs font-medium uppercase tracking-wide mb-1 ${isDarkMode ? 'text-slate-500' : 'text-slate-500'}`}>Balance</p>
-              <p className={`text-xl font-semibold ${totalIncome - totalExpense >= 0 ? 'text-emerald-600' : 'text-rose-600'}`}>
+            <div className={`rounded-lg sm:rounded-xl p-3 sm:p-4 border transition-colors xs:col-span-2 sm:col-span-1 ${isDarkMode ? 'bg-slate-800/50 border-slate-700/50' : 'bg-white border-slate-200/60'}`}>
+              <p className={`text-[10px] sm:text-xs font-medium uppercase tracking-wide mb-1 ${isDarkMode ? 'text-slate-500' : 'text-slate-500'}`}>Balance</p>
+              <p className={`text-lg sm:text-xl font-semibold ${totalIncome - totalExpense >= 0 ? 'text-emerald-600' : 'text-rose-600'}`}>
                 ₹{(totalIncome - totalExpense).toLocaleString()}
               </p>
             </div>
           </div>
 
           {/* Filters */}
-          <div className={`rounded-xl p-4 border ${isDarkMode ? 'bg-slate-800/30 border-slate-700/50' : 'bg-white border-slate-200/60'}`}>
+          <div className={`rounded-lg sm:rounded-xl p-3 sm:p-4 border ${isDarkMode ? 'bg-slate-800/30 border-slate-700/50' : 'bg-white border-slate-200/60'}`}>
             <div className="flex items-center justify-between mb-3">
-              <div className="flex items-center gap-2">
-                <Filter size={14} className={isDarkMode ? 'text-slate-500' : 'text-slate-400'} />
-                <span className={`text-sm font-medium ${isDarkMode ? 'text-slate-300' : 'text-slate-600'}`}>Filters</span>
+              <div className="flex items-center gap-1.5 sm:gap-2">
+                <Filter size={12} className={`${isDarkMode ? 'text-slate-500' : 'text-slate-400'} sm:w-3.5 sm:h-3.5`} />
+                <span className={`text-xs sm:text-sm font-medium ${isDarkMode ? 'text-slate-300' : 'text-slate-600'}`}>Filters</span>
               </div>
               {hasActiveFilters && (
-                <button onClick={clearFilters} className="flex items-center gap-1 text-xs font-medium text-rose-500 hover:text-rose-600">
-                  <X size={12} /> Clear
+                <button onClick={clearFilters} className="flex items-center gap-1 text-[10px] sm:text-xs font-medium text-rose-500 hover:text-rose-600">
+                  <X size={10} className="sm:w-3 sm:h-3" /> Clear
                 </button>
               )}
             </div>
 
-            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
-              <div className={`flex items-center gap-2 px-3 py-2.5 rounded-lg border ${isDarkMode ? 'bg-slate-800/80 border-slate-700' : 'bg-slate-50 border-slate-200/60'}`}>
-                <Search size={14} className={isDarkMode ? 'text-slate-500' : 'text-slate-400'} />
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2 sm:gap-3">
+              <div className={`col-span-2 sm:col-span-1 flex items-center gap-2 px-2.5 sm:px-3 py-2 sm:py-2.5 rounded-lg border ${isDarkMode ? 'bg-slate-800/80 border-slate-700' : 'bg-slate-50 border-slate-200/60'}`}>
+                <Search size={12} className={`${isDarkMode ? 'text-slate-500' : 'text-slate-400'} sm:w-3.5 sm:h-3.5`} />
                 <input
                   type="text"
                   placeholder="Search..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
-                  className={`bg-transparent outline-none flex-1 text-sm ${isDarkMode ? 'text-white placeholder-slate-600' : 'text-slate-700 placeholder-slate-400'}`}
+                  className={`bg-transparent outline-none flex-1 text-xs sm:text-sm ${isDarkMode ? 'text-white placeholder-slate-600' : 'text-slate-700 placeholder-slate-400'}`}
                 />
               </div>
 
@@ -459,13 +460,13 @@ const AllTransactions = () => {
               <div className="relative">
                 <button
                   onClick={() => setShowDatePicker(!showDatePicker)}
-                  className={`w-full flex items-center gap-2 px-3 py-2.5 rounded-lg border font-medium text-sm transition-colors ${selectedDate
+                  className={`w-full flex items-center gap-1.5 sm:gap-2 px-2.5 sm:px-3 py-2 sm:py-2.5 rounded-lg border font-medium text-xs sm:text-sm transition-colors ${selectedDate
                     ? (isDarkMode ? 'bg-slate-700 border-slate-600 text-white' : 'bg-slate-100 border-slate-300 text-slate-900')
                     : (isDarkMode ? 'bg-slate-800/80 border-slate-700 text-slate-400' : 'bg-white border-slate-200/60 text-slate-500')
                     }`}
                 >
-                  <CalendarDays size={14} />
-                  <span className="truncate">{selectedDate || "Pick Date"}</span>
+                  <CalendarDays size={12} className="sm:w-3.5 sm:h-3.5" />
+                  <span className="truncate text-xs sm:text-sm">{selectedDate || "Pick Date"}</span>
                 </button>
                 {showDatePicker && (
                   <div className={`absolute top-full left-0 mt-2 p-3 rounded-lg border shadow-lg z-50 ${isDarkMode ? 'bg-slate-800 border-slate-700' : 'bg-white border-slate-200'}`}>
@@ -473,10 +474,10 @@ const AllTransactions = () => {
                       type="date"
                       value={selectedDate}
                       onChange={(e) => { setSelectedDate(e.target.value); setShowDatePicker(false); }}
-                      className={`px-3 py-2 rounded-lg border text-sm ${isDarkMode ? 'bg-slate-700 border-slate-600 text-white' : 'bg-slate-50 border-slate-200 text-slate-700'}`}
+                      className={`px-3 py-2 rounded-lg border text-xs sm:text-sm ${isDarkMode ? 'bg-slate-700 border-slate-600 text-white' : 'bg-slate-50 border-slate-200 text-slate-700'}`}
                     />
                     {selectedDate && (
-                      <button onClick={() => { setSelectedDate(""); setShowDatePicker(false); }} className="w-full mt-2 text-xs text-rose-500 font-medium">
+                      <button onClick={() => { setSelectedDate(""); setShowDatePicker(false); }} className="w-full mt-2 text-[10px] sm:text-xs text-rose-500 font-medium">
                         Clear Date
                       </button>
                     )}
@@ -487,13 +488,13 @@ const AllTransactions = () => {
           </div>
 
           {/* Transactions List */}
-          <div className={`rounded-xl border overflow-hidden ${isDarkMode ? 'bg-slate-800/30 border-slate-700/50' : 'bg-white border-slate-200/60'}`}>
-            <div className={`px-4 py-3 border-b flex items-center justify-between ${isDarkMode ? 'border-slate-700/50' : 'border-slate-100'}`}>
-              <span className={`text-xs font-medium uppercase tracking-wide ${isDarkMode ? 'text-slate-500' : 'text-slate-400'}`}>
+          <div className={`rounded-lg sm:rounded-xl border overflow-hidden ${isDarkMode ? 'bg-slate-800/30 border-slate-700/50' : 'bg-white border-slate-200/60'}`}>
+            <div className={`px-3 sm:px-4 py-2.5 sm:py-3 border-b flex items-center justify-between ${isDarkMode ? 'border-slate-700/50' : 'border-slate-100'}`}>
+              <span className={`text-[10px] sm:text-xs font-medium uppercase tracking-wide ${isDarkMode ? 'text-slate-500' : 'text-slate-400'}`}>
                 {loading ? "Loading..." : `${filteredTransactions.length} Records`}
               </span>
-              <button onClick={exportToCSV} className={`flex items-center gap-2 px-3 py-1.5 rounded-lg font-medium text-xs transition-colors ${isDarkMode ? 'bg-slate-800 text-white hover:bg-slate-700' : 'bg-slate-900 text-white hover:bg-slate-800'}`}>
-                <Download size={12} />
+              <button onClick={exportToCSV} className={`flex items-center gap-1.5 sm:gap-2 px-2.5 sm:px-3 py-1.5 rounded-lg font-medium text-[10px] sm:text-xs transition-colors ${isDarkMode ? 'bg-slate-800 text-white hover:bg-slate-700' : 'bg-slate-900 text-white hover:bg-slate-800'}`}>
+                <Download size={11} className="sm:w-3 sm:h-3" />
                 Export
               </button>
             </div>

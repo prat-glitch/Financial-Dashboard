@@ -87,7 +87,7 @@ const DashboardCard = ({ icon: Icon, title, value, color, isDarkMode, isMain = f
   if (isMain) {
     return (
       <div className={`
-        group relative rounded-2xl p-6 overflow-hidden cursor-pointer
+        group relative rounded-xl sm:rounded-2xl p-4 sm:p-5 md:p-6 overflow-hidden cursor-pointer
         transition-all duration-200 ease-out
         hover:-translate-y-0.5 hover:shadow-xl hover:shadow-purple-500/10
         ${isDarkMode 
@@ -95,22 +95,22 @@ const DashboardCard = ({ icon: Icon, title, value, color, isDarkMode, isMain = f
           : 'bg-linear-to-br from-violet-500 to-purple-600'}
       `}>
         <div className="relative z-10">
-          <div className="flex items-center gap-2 mb-4">
-            <Icon size={20} className="text-white/70" />
-            <p className="text-sm font-medium text-white/70">{title}</p>
+          <div className="flex items-center gap-1.5 sm:gap-2 mb-3 sm:mb-4">
+            <Icon size={16} className="text-white/70 sm:w-5 sm:h-5" />
+            <p className="text-xs sm:text-sm font-medium text-white/70">{title}</p>
           </div>
-          <p className="text-3xl md:text-4xl font-bold text-white tracking-tight">{value}</p>
+          <p className="text-2xl sm:text-3xl md:text-4xl font-bold text-white tracking-tight">{value}</p>
         </div>
         {/* Decorative elements */}
-        <div className="absolute -right-8 -bottom-8 w-40 h-40 rounded-full bg-white/10 group-hover:scale-110 transition-transform duration-300" />
-        <div className="absolute right-12 bottom-4 w-20 h-20 rounded-full bg-white/5" />
+        <div className="absolute -right-8 -bottom-8 w-32 h-32 sm:w-40 sm:h-40 rounded-full bg-white/10 group-hover:scale-110 transition-transform duration-300" />
+        <div className="absolute right-8 sm:right-12 bottom-3 sm:bottom-4 w-16 h-16 sm:w-20 sm:h-20 rounded-full bg-white/5" />
       </div>
     );
   }
 
   return (
     <div className={`
-      group relative rounded-2xl p-6 border-l-4 overflow-hidden cursor-pointer
+      group relative rounded-xl sm:rounded-2xl p-4 sm:p-5 md:p-6 border-l-4 overflow-hidden cursor-pointer
       transition-all duration-200 ease-out
       hover:-translate-y-0.5 hover:shadow-lg
       ${isDarkMode 
@@ -120,11 +120,11 @@ const DashboardCard = ({ icon: Icon, title, value, color, isDarkMode, isMain = f
     `}>
       <div className="flex items-center justify-between">
         <div>
-          <p className={`text-sm font-medium mb-1 ${isDarkMode ? 'text-slate-400' : 'text-slate-500'}`}>{title}</p>
-          <p className={`text-2xl md:text-3xl font-bold tracking-tight ${isDarkMode ? 'text-white' : 'text-slate-800'}`}>{value}</p>
+          <p className={`text-xs sm:text-sm font-medium mb-1 ${isDarkMode ? 'text-slate-400' : 'text-slate-500'}`}>{title}</p>
+          <p className={`text-xl sm:text-2xl md:text-3xl font-bold tracking-tight ${isDarkMode ? 'text-white' : 'text-slate-800'}`}>{value}</p>
         </div>
-        <div className={`w-12 h-12 rounded-xl flex items-center justify-center shadow-lg ${styles.iconBg}`}>
-          <Icon size={22} className={styles.iconColor} />
+        <div className={`w-10 h-10 sm:w-11 sm:h-11 md:w-12 md:h-12 rounded-lg sm:rounded-xl flex items-center justify-center shadow-lg ${styles.iconBg}`}>
+          <Icon size={18} className={`${styles.iconColor} sm:w-5 sm:h-5 md:w-[22px] md:h-[22px]`} />
         </div>
       </div>
     </div>
@@ -312,60 +312,60 @@ const Dashboard = () => {
         
         {/* TOP BAR */}
         <header className={`
-          sticky top-0 z-30 px-4 md:px-6 lg:px-8 py-4 border-b
+          sticky top-0 z-30 px-3 sm:px-4 md:px-6 lg:px-8 py-3 md:py-4 border-b
           ${isDarkMode 
             ? 'bg-slate-900/95 border-slate-800 backdrop-blur-xl' 
             : 'bg-white/95 border-violet-100 backdrop-blur-xl'}
         `}>
-          <div className="flex items-center justify-between gap-4 max-w-7xl mx-auto">
+          <div className="flex items-center justify-between gap-2 sm:gap-3 md:gap-4 max-w-7xl mx-auto">
             {/* Greeting */}
-            <div className="hidden sm:block">
-              <h1 className={`text-xl font-semibold ${isDarkMode ? 'text-white' : 'text-slate-800'}`}>
+            <div className="hidden lg:block">
+              <h1 className={`text-lg xl:text-xl font-semibold ${isDarkMode ? 'text-white' : 'text-slate-800'}`}>
                 Hi, {user?.name?.split(' ')[0] || 'User'} 👋
               </h1>
-              <p className={`text-sm ${isDarkMode ? 'text-slate-500' : 'text-slate-400'}`}>
+              <p className={`text-xs md:text-sm ${isDarkMode ? 'text-slate-500' : 'text-slate-400'}`}>
                 Welcome back to your dashboard
               </p>
             </div>
 
             {/* Search Input */}
-            <div className="flex-1 max-w-md">
+            <div className="flex-1 max-w-xs lg:max-w-md">
               <div className={`
-                flex items-center gap-3 px-4 py-2.5 rounded-xl border
+                flex items-center gap-2 md:gap-3 px-3 md:px-4 py-2 md:py-2.5 rounded-lg md:rounded-xl border
                 transition-all duration-200
                 ${isDarkMode 
                   ? 'bg-slate-800/50 border-slate-700 focus-within:border-violet-500/50' 
                   : 'bg-violet-50/50 border-violet-100 focus-within:border-violet-300 focus-within:bg-white'}
               `}>
-                <Search size={18} className={isDarkMode ? 'text-slate-500' : 'text-violet-400'} />
+                <Search size={16} className={`${isDarkMode ? 'text-slate-500' : 'text-violet-400'} sm:w-[18px] sm:h-[18px]`} />
                 <input
                   type="text"
-                  placeholder="Search transactions..."
+                  placeholder="Search..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className={`flex-1 bg-transparent outline-none text-sm ${isDarkMode ? 'text-white placeholder-slate-500' : 'text-slate-800 placeholder-slate-400'}`}
+                  className={`flex-1 bg-transparent outline-none text-xs md:text-sm ${isDarkMode ? 'text-white placeholder-slate-500' : 'text-slate-800 placeholder-slate-400'}`}
                 />
               </div>
             </div>
 
             {/* Actions */}
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-1.5 sm:gap-2">
               <button
                 onClick={toggleTheme}
-                className={`w-10 h-10 rounded-xl flex items-center justify-center transition-all duration-200 ${isDarkMode ? 'hover:bg-slate-800 text-amber-400' : 'hover:bg-violet-100 text-slate-500'}`}
+                className={`w-8 h-8 sm:w-9 sm:h-9 md:w-10 md:h-10 rounded-lg md:rounded-xl flex items-center justify-center transition-all duration-200 ${isDarkMode ? 'hover:bg-slate-800 text-amber-400' : 'hover:bg-violet-100 text-slate-500'}`}
               >
-                {isDarkMode ? <Sun size={20} /> : <Moon size={20} />}
+                {isDarkMode ? <Sun size={17} className="sm:w-[18px] sm:h-[18px] md:w-5 md:h-5" /> : <Moon size={17} className="sm:w-[18px] sm:h-[18px] md:w-5 md:h-5" />}
               </button>
-              <button className={`relative w-10 h-10 rounded-xl flex items-center justify-center transition-all duration-200 ${isDarkMode ? 'hover:bg-slate-800 text-slate-400' : 'hover:bg-violet-100 text-slate-500'}`}>
-                <Bell size={20} />
-                <span className="absolute top-2 right-2 w-2.5 h-2.5 bg-violet-500 rounded-full ring-2 ring-white dark:ring-slate-900" />
+              <button className={`hidden sm:flex relative w-8 h-8 sm:w-9 sm:h-9 md:w-10 md:h-10 rounded-lg md:rounded-xl items-center justify-center transition-all duration-200 ${isDarkMode ? 'hover:bg-slate-800 text-slate-400' : 'hover:bg-violet-100 text-slate-500'}`}>
+                <Bell size={17} className="sm:w-[18px] sm:h-[18px] md:w-5 md:h-5" />
+                <span className="absolute top-1.5 right-1.5 sm:top-2 sm:right-2 w-2 h-2 md:w-2.5 md:h-2.5 bg-violet-500 rounded-full ring-2 ring-white dark:ring-slate-900" />
               </button>
               <Link to="/profile">
-                <div className={`w-10 h-10 rounded-xl overflow-hidden ring-2 transition-all duration-200 ${isDarkMode ? 'ring-slate-700 hover:ring-violet-500/50' : 'ring-violet-200 hover:ring-violet-400'}`}>
+                <div className={`w-8 h-8 sm:w-9 sm:h-9 md:w-10 md:h-10 rounded-lg md:rounded-xl overflow-hidden ring-2 transition-all duration-200 ${isDarkMode ? 'ring-slate-700 hover:ring-violet-500/50' : 'ring-violet-200 hover:ring-violet-400'}`}>
                   {user?.avatar ? (
                     <img src={user.avatar} className="w-full h-full object-cover" alt="User" />
                   ) : (
-                    <div className="w-full h-full flex items-center justify-center text-sm font-medium bg-linear-to-br from-violet-400 to-purple-500 text-white">
+                    <div className="w-full h-full flex items-center justify-center text-xs md:text-sm font-medium bg-linear-to-br from-violet-400 to-purple-500 text-white">
                       {getInitials(user?.name || "User")}
                     </div>
                   )}

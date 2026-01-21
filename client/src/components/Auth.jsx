@@ -100,43 +100,43 @@ const Auth = ({ onLogin, isDarkMode }) => {
   };
 
   return (
-    <div className={`min-h-screen flex items-center justify-center p-4 transition-colors duration-300 ${
+    <div className={`min-h-screen flex items-center justify-center p-3 sm:p-4 transition-colors duration-300 ${
       isDarkMode 
         ? 'bg-slate-900' 
-        : 'bg-gradient-to-br from-slate-50 via-white to-violet-50'
+        : 'bg-linear-to-br from-slate-50 via-white to-violet-50'
     }`}>
       {/* Background Pattern */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <div className={`absolute top-1/4 -left-20 w-96 h-96 rounded-full blur-3xl ${
+        <div className={`absolute top-1/4 -left-20 w-64 h-64 sm:w-80 sm:h-80 md:w-96 md:h-96 rounded-full blur-3xl ${
           isDarkMode ? 'bg-violet-900/20' : 'bg-violet-200/40'
         }`} />
-        <div className={`absolute bottom-1/4 -right-20 w-80 h-80 rounded-full blur-3xl ${
+        <div className={`absolute bottom-1/4 -right-20 w-56 h-56 sm:w-72 sm:h-72 md:w-80 md:h-80 rounded-full blur-3xl ${
           isDarkMode ? 'bg-purple-900/20' : 'bg-purple-200/40'
         }`} />
       </div>
 
       {/* Auth Card */}
-      <div className={`relative w-full max-w-md rounded-3xl p-8 md:p-10 shadow-2xl transition-all duration-300 ${
+      <div className={`relative w-full max-w-md rounded-2xl sm:rounded-3xl p-6 sm:p-8 md:p-10 shadow-2xl transition-all duration-300 ${
         isDarkMode 
           ? 'bg-slate-800/90 backdrop-blur-xl shadow-violet-500/10' 
           : 'bg-white/90 backdrop-blur-xl shadow-violet-500/10'
       }`}>
         
         {/* Logo */}
-        <div className="flex justify-center mb-6">
-          <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-violet-500 to-purple-600 flex items-center justify-center shadow-lg shadow-violet-500/30">
-            <span className="text-white text-2xl font-bold">₹</span>
+        <div className="flex justify-center mb-5 sm:mb-6">
+          <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-xl sm:rounded-2xl bg-linear-to-br from-violet-500 to-purple-600 flex items-center justify-center shadow-lg shadow-violet-500/30">
+            <span className="text-white text-xl sm:text-2xl font-bold">₹</span>
           </div>
         </div>
 
         {/* Title */}
-        <div className="text-center mb-8">
-          <h1 className={`text-3xl font-bold tracking-tight ${
+        <div className="text-center mb-6 sm:mb-8">
+          <h1 className={`text-2xl sm:text-3xl font-bold tracking-tight ${
             isDarkMode ? 'text-white' : 'text-slate-800'
           }`}>
             {isLogin ? 'Sign in' : 'Create Account'}
           </h1>
-          <p className={`mt-2 ${isDarkMode ? 'text-slate-400' : 'text-slate-500'}`}>
+          <p className={`mt-2 text-sm sm:text-base ${isDarkMode ? 'text-slate-400' : 'text-slate-500'}`}>
             {isLogin 
               ? 'Welcome back! Please sign in to continue' 
               : 'Start your expense tracking journey'}
@@ -297,7 +297,7 @@ const Auth = ({ onLogin, isDarkMode }) => {
             className={`w-full py-4 rounded-xl font-semibold text-white transition-all duration-200 flex items-center justify-center gap-2 ${
               loading 
                 ? 'bg-violet-400 cursor-not-allowed' 
-                : 'bg-gradient-to-r from-violet-500 to-purple-600 hover:from-violet-600 hover:to-purple-700 shadow-lg shadow-violet-500/30 hover:shadow-violet-500/40'
+                : 'bg-linear-to-r from-violet-500 to-purple-600 hover:from-violet-600 hover:to-purple-700 shadow-lg shadow-violet-500/30 hover:shadow-violet-500/40'
             }`}
           >
             {loading ? (

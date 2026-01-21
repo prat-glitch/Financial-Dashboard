@@ -1,20 +1,13 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { Link } from "react-router-dom";
 import {
-    List,
-    CreditCard,
-    PieChart,
     User,
     Mail,
     Phone,
-    Calendar,
-    Wallet,
     Edit2,
-    ChevronRight,
-    Bell,
+    Settings,
+    Wallet,
     Shield,
-    Moon,
-    Sun,
 } from "lucide-react";
 
 import { useTheme } from "../context/ThemeContext.jsx";
@@ -26,20 +19,6 @@ const ProfileOverview = () => {
     const { user } = useUser();
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
-    // Member since is not in context yet, we can add it or hardcode for now
-    // But name, email, phone, avatar should come from context
-    const fullUser = {
-        ...user,
-        memberSince: "January 2024",
-    };
-
-    const [stats, setStats] = useState({
-        totalTransactions: 156,
-        categoriesCreated: 8,
-        thisMonthSpent: 24093,
-        budgetRemaining: 25907,
-    });
-
     const getInitials = (name) => {
         return name
             .split(" ")
@@ -49,39 +28,26 @@ const ProfileOverview = () => {
             .slice(0, 2);
     };
 
-    const quickSettings = [
+    const quickActions = [
         {
-            icon: <User size={20} />,
+            icon: <User size={18} />,
             label: "Edit Profile",
-            description: "Update your personal information",
             link: "/settings",
-            tab: "user",
         },
         {
-            icon: <Wallet size={20} />,
-            label: "Financial Settings",
-            description: "Manage budget and preferences",
+            icon: <Wallet size={18} />,
+            label: "Financial",
             link: "/settings",
-            tab: "financial",
         },
         {
-            icon: <List size={20} />,
-            label: "Categories",
-            description: "Add or modify expense categories",
-            link: "/settings",
-            tab: "categories",
-        },
-        {
-            icon: <Shield size={20} />,
+            icon: <Shield size={18} />,
             label: "Security",
-            description: "Password and session management",
             link: "/settings",
-            tab: "security",
         },
     ];
 
     return (
-        <div className={`w-full min-h-screen flex ${isDarkMode ? 'dark bg-slate-900' : 'bg-[#f8f7fc]'}`}>
+        <div className={`w-full min-h-screen flex ${isDarkMode ? 'bg-slate-900' : 'bg-gray-50'}`}>
             {/* MOBILE HEADER */}
             <MobileHeader isMobileMenuOpen={isMobileMenuOpen} setIsMobileMenuOpen={setIsMobileMenuOpen} />
 
@@ -92,164 +58,77 @@ const ProfileOverview = () => {
             <MobileOverlay isMobileMenuOpen={isMobileMenuOpen} setIsMobileMenuOpen={setIsMobileMenuOpen} />
 
             {/* MAIN CONTENT */}
-            <main className="flex-1 md:ml-64 p-8">
-                <div className="max-w-4xl mx-auto">
+            <main className="flex-1 md:ml-64 p-4 sm:p-6 lg:p-8 pt-20 md:pt-8">
+                <div className="max-w-3xl mx-auto">
                     {/* Profile Header Card */}
-                    <div className={`p-8 rounded-2xl mb-8 border ${isDarkMode ? 'bg-purple-900 border-purple-800 text-white' : 'bg-indigo-600 border-indigo-500 text-white shadow-lg shadow-indigo-500/10'}`}>
-                        <div className="flex flex-col md:flex-row items-center gap-6">
+                    <div className={`p-6 sm:p-8 rounded-2xl sm:rounded-3xl mb-6 shadow-lg ${isDarkMode ? 'bg-linear-to-br from-indigo-900 to-purple-900' : 'bg-linear-to-br from-indigo-600 to-purple-600'}`}>
+                        <div className="flex flex-col sm:flex-row items-center gap-4 sm:gap-6">
                             {/* Avatar */}
                             <div className="relative">
-                                <div className="w-32 h-32 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center text-white text-4xl font-bold shadow-2xl border-4 border-white/30">
-                                    {fullUser.avatar ? (
+                                <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-full bg-white/10 backdrop-blur-sm flex items-center justify-center text-white text-2xl sm:text-3xl font-bold shadow-xl border-2 sm:border-4 border-white/20">
+                                    {user.avatar ? (
                                         <img
-                                            src={fullUser.avatar}
+                                            src={user.avatar}
                                             alt="Avatar"
                                             className="w-full h-full rounded-full object-cover"
                                         />
                                     ) : (
-                                        getInitials(fullUser.name)
+                                        getInitials(user.name)
                                     )}
                                 </div>
                                 <Link
                                     to="/settings"
-                                    className="absolute bottom-0 right-0 w-10 h-10 bg-white rounded-full flex items-center justify-center shadow-lg hover:scale-110 transition-transform"
+                                    className="absolute -bottom-1 -right-1 w-8 h-8 sm:w-9 sm:h-9 bg-white rounded-full flex items-center justify-center shadow-lg hover:scale-110 transition-transform"
                                 >
-                                    <Edit2 size={18} className="text-indigo-600" />
+                                    <Edit2 size={14} className={isDarkMode ? 'text-purple-600' : 'text-indigo-600'} />
                                 </Link>
                             </div>
 
                             {/* User Info */}
-                            <div className="text-center md:text-left text-white flex-1">
-                                <h1 className="text-3xl font-bold mb-2">{fullUser.name}</h1>
-                                <div className="flex flex-col md:flex-row gap-4 text-white/80">
-                                    <span className="flex items-center gap-2 justify-center md:justify-start">
-                                        <Mail size={16} />
-                                        {fullUser.email}
+                            <div className="text-center sm:text-left text-white flex-1 space-y-2">
+                                <h1 className="text-xl sm:text-2xl font-bold">{user.name}</h1>
+                                <div className="flex flex-col sm:flex-row gap-2 sm:gap-4 text-xs sm:text-sm text-white/80">
+                                    <span className="flex items-center gap-1.5 justify-center sm:justify-start">
+                                        <Mail size={14} />
+                                        <span className="truncate max-w-[180px] sm:max-w-none">{user.email}</span>
                                     </span>
-                                    <span className="flex items-center gap-2 justify-center md:justify-start">
-                                        <Phone size={16} />
-                                        {fullUser.phone}
-                                    </span>
+                                    {user.phone && (
+                                        <span className="flex items-center gap-1.5 justify-center sm:justify-start">
+                                            <Phone size={14} />
+                                            {user.phone}
+                                        </span>
+                                    )}
                                 </div>
-                                <p className="mt-3 text-white/60 text-sm flex items-center gap-2 justify-center md:justify-start">
-                                    <Calendar size={14} />
-                                    Member since {fullUser.memberSince}
-                                </p>
-                            </div>
-
-                            {/* Actions */}
-                            <div className="flex gap-4">
-                                <Link
-                                    to="/settings"
-                                    className={`px-6 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${isDarkMode ? 'bg-white text-purple-950 shadow-none' : 'bg-white text-indigo-600 shadow-md hover:bg-indigo-50'}`}
-                                >
-                                    Personalize Identity
-                                </Link>
                             </div>
                         </div>
                     </div>
 
-                    {/* Stats Cards */}
-                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
-                        <div className={`rounded-2xl p-5 shadow-sm border ${isDarkMode ? 'bg-white border-gray-100' : 'bg-white border-gray-100'}`}>
-                            <p className={isDarkMode ? 'text-gray-400 text-sm mb-1' : 'text-gray-500 text-sm mb-1'}>Transactions</p>
-                            <p className={`text-2xl font-bold ${isDarkMode ? 'text-indigo-950' : 'text-gray-900'}`}>{stats.totalTransactions}</p>
+                    {/* Quick Actions */}
+                    <div className={`rounded-2xl sm:rounded-3xl overflow-hidden shadow-md ${isDarkMode ? 'bg-slate-800 border border-slate-700' : 'bg-white'}`}>
+                        <div className={`px-5 py-4 border-b ${isDarkMode ? 'border-slate-700 bg-slate-800/50' : 'border-gray-100 bg-gray-50'}`}>
+                            <h2 className={`text-sm font-semibold flex items-center gap-2 ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>
+                                <Settings size={16} />
+                                Quick Settings
+                            </h2>
                         </div>
-                        <div className={`rounded-2xl p-5 shadow-sm border ${isDarkMode ? 'bg-white border-gray-100' : 'bg-white border-gray-100'}`}>
-                            <p className={isDarkMode ? 'text-gray-400 text-sm mb-1' : 'text-gray-500 text-sm mb-1'}>Categories</p>
-                            <p className={`text-2xl font-bold ${isDarkMode ? 'text-indigo-950' : 'text-gray-900'}`}>{stats.categoriesCreated}</p>
-                        </div>
-                        <div className={`rounded-2xl p-5 shadow-sm border ${isDarkMode ? 'bg-white border-gray-100' : 'bg-white border-gray-100'}`}>
-                            <p className={isDarkMode ? 'text-gray-400 text-sm mb-1' : 'text-gray-500 text-sm mb-1'}>This Month</p>
-                            <p className="text-2xl font-bold text-red-500">
-                                ₹{stats.thisMonthSpent.toLocaleString()}
-                            </p>
-                        </div>
-                        <div className={`rounded-2xl p-5 shadow-sm border ${isDarkMode ? 'bg-white border-gray-100' : 'bg-white border-gray-100'}`}>
-                            <p className={isDarkMode ? 'text-gray-400 text-sm mb-1' : 'text-gray-500 text-sm mb-1'}>Budget Left</p>
-                            <p className="text-2xl font-bold text-green-500">
-                                ₹{stats.budgetRemaining.toLocaleString()}
-                            </p>
-                        </div>
-                    </div>
-
-                    {/* Quick Settings */}
-                    <div className={`bg-white shadow-sm transition-all duration-300 rounded-2xl border ${isDarkMode ? 'border-purple-200/20' : 'border-indigo-50'}`}>
-                        <div className="px-6 py-5 border-b border-inherit bg-black/5">
-                            <h2 className={`text-sm font-black uppercase tracking-widest ${isDarkMode ? 'text-white' : 'text-indigo-950'}`}>Operational Access</h2>
-                        </div>
-                        <div className={`divide-y ${isDarkMode ? 'divide-gray-700' : 'divide-gray-100'}`}>
-                            {quickSettings.map((item, index) => (
+                        <div className={`divide-y ${isDarkMode ? 'divide-slate-700' : 'divide-gray-100'}`}>
+                            {quickActions.map((item, index) => (
                                 <Link
                                     key={index}
                                     to={item.link}
-                                    className={`flex items-center justify-between p-5 transition-colors ${isDarkMode ? 'hover:bg-gray-50' : 'hover:bg-gray-50'}`}
+                                    className={`flex items-center justify-between p-4 sm:p-5 transition-colors ${isDarkMode ? 'hover:bg-slate-700/50' : 'hover:bg-gray-50'}`}
                                 >
-                                    <div className="flex items-center gap-4">
-                                        <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${isDarkMode ? 'bg-indigo-50 text-indigo-600' : 'bg-indigo-100 text-indigo-600'}`}>
+                                    <div className="flex items-center gap-3">
+                                        <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${isDarkMode ? 'bg-indigo-500/20 text-indigo-400' : 'bg-indigo-50 text-indigo-600'}`}>
                                             {item.icon}
                                         </div>
-                                        <div>
-                                            <h3 className={`font-medium ${isDarkMode ? 'text-indigo-950' : 'text-gray-900'}`}>{item.label}</h3>
-                                            <p className={`text-sm ${isDarkMode ? 'text-gray-500' : 'text-gray-500'}`}>{item.description}</p>
-                                        </div>
+                                        <span className={`font-medium text-sm ${isDarkMode ? 'text-gray-200' : 'text-gray-700'}`}>{item.label}</span>
                                     </div>
-                                    <ChevronRight size={20} className={isDarkMode ? 'text-gray-600' : 'text-gray-400'} />
+                                    <svg className={`w-5 h-5 ${isDarkMode ? 'text-gray-500' : 'text-gray-400'}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                                    </svg>
                                 </Link>
                             ))}
-                        </div>
-                    </div>
-
-                    {/* Current Preferences Summary */}
-                    <div className={`rounded-2xl shadow-sm border p-6 ${isDarkMode ? 'bg-white border-gray-100' : 'bg-white border-gray-100'}`}>
-                        <h2 className={`text-xl font-semibold mb-4 ${isDarkMode ? 'text-indigo-950' : 'text-gray-900'}`}>Current Preferences</h2>
-                        <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
-                            <div className="flex items-center gap-3">
-                                <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${isDarkMode ? 'bg-green-900/30' : 'bg-green-100'}`}>
-                                    <span className={`font-bold text-lg ${isDarkMode ? 'text-green-400' : 'text-green-600'}`}>₹</span>
-                                </div>
-                                <div>
-                                    <p className={`text-xs ${isDarkMode ? 'text-gray-500' : 'text-gray-500'}`}>Currency</p>
-                                    <p className={`font-medium ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>
-                                        INR
-                                    </p>
-                                </div>
-                            </div>
-                            <div className="flex items-center gap-3">
-                                <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${isDarkMode ? 'bg-blue-900/30' : 'bg-blue-100'}`}>
-                                    <Wallet size={20} className={isDarkMode ? 'text-blue-400' : 'text-blue-600'} />
-                                </div>
-                                <div>
-                                    <p className={`text-xs ${isDarkMode ? 'text-gray-500' : 'text-gray-500'}`}>Monthly Budget</p>
-                                    <p className={`font-medium ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>
-                                        ₹50,000
-                                    </p>
-                                </div>
-                            </div>
-                            <div className="flex items-center gap-3">
-                                <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${isDarkMode ? 'bg-purple-900/30' : 'bg-purple-100'}`}>
-                                    {isDarkMode ? (
-                                        <Moon size={20} className="text-purple-400" />
-                                    ) : (
-                                        <Sun size={20} className="text-purple-600" />
-                                    )}
-                                </div>
-                                <div>
-                                    <p className={`text-xs ${isDarkMode ? 'text-gray-500' : 'text-gray-500'}`}>Theme</p>
-                                    <p className={`font-medium text-white capitalize ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>{isDarkMode ? 'dark' : 'light'}</p>
-                                </div>
-                            </div>
-                            <div className="flex items-center gap-3">
-                                <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${isDarkMode ? 'bg-amber-900/30' : 'bg-amber-100'}`}>
-                                    <Bell size={20} className={isDarkMode ? 'text-amber-400' : 'text-amber-600'} />
-                                </div>
-                                <div>
-                                    <p className={`text-xs ${isDarkMode ? 'text-gray-500' : 'text-gray-500'}`}>Notifications</p>
-                                    <p className={`font-medium ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>
-                                        Enabled
-                                    </p>
-                                </div>
-                            </div>
                         </div>
                     </div>
                 </div>
