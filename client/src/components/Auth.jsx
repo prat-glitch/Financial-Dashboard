@@ -75,12 +75,13 @@ const Auth = ({ onLogin, isDarkMode }) => {
       const response = await fetch(`${API_BASE}/users/google-auth`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
+        credentials: "include",
         body: JSON.stringify({ credential: credentialResponse.credential })
       });
 
       const data = await response.json();
 
-      if (response.ok) {
+      if (response.ok && data.success) {
         // Use AuthContext login
         login(data.token, data.user);
         if (onLogin) onLogin(data.user);
