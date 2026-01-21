@@ -231,7 +231,7 @@ const Sidebar = ({ isMobileMenuOpen, setIsMobileMenuOpen }) => {
         </div>
         
         {/* Navigation */}
-        <nav className="px-4 py-2">
+        <nav className="px-4 py-2 flex-1 overflow-y-auto pb-36">
           <p className={`text-xs font-semibold uppercase tracking-wider px-3 mb-2 ${isDarkMode ? 'text-slate-500' : 'text-slate-400'}`}>
             Menu
           </p>
@@ -263,7 +263,9 @@ const Sidebar = ({ isMobileMenuOpen, setIsMobileMenuOpen }) => {
         </nav>
         
         {/* Bottom Actions */}
-        <div className={`absolute bottom-0 left-0 right-0 p-4 border-t ${isDarkMode ? 'border-slate-800' : 'border-slate-100'}`}>
+        <div className={`absolute bottom-0 left-0 right-0 p-4 border-t ${isDarkMode ? 'border-slate-800 bg-slate-900' : 'border-slate-100 bg-white'}`}
+          style={{ paddingBottom: 'calc(env(safe-area-inset-bottom, 0px) + 16px)' }}
+        >
           <div className="space-y-2">
             <button
               onClick={toggleTheme}
