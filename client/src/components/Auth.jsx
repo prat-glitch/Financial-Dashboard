@@ -101,11 +101,11 @@ const Auth = ({ onLogin, isDarkMode }) => {
           <h1 className={`text-2xl sm:text-3xl font-bold tracking-tight ${
             isDarkMode ? 'text-white' : 'text-slate-800'
           }`}>
-            {isLogin ? 'Sign in' : 'Create Account'}
+            {isLogin ? 'Welcome Back' : 'Create Account'}
           </h1>
           <p className={`mt-2 text-sm sm:text-base ${isDarkMode ? 'text-slate-400' : 'text-slate-500'}`}>
             {isLogin 
-              ? 'Welcome back! Please sign in to continue' 
+              ? 'Sign in to manage your expenses' 
               : 'Start your expense tracking journey'}
           </p>
         </div>
