@@ -3,7 +3,6 @@ const { protect } = require('../middlewares/authMiddleware');
 const {
     registerUser,
     loginUser,
-    googleAuth,
     verifyToken,
     getUserProfile,
     updateUserProfile,
@@ -14,7 +13,6 @@ const {
 // Authentication routes (public)
 userRoutes.post('/register', registerUser);
 userRoutes.post('/login', loginUser);
-userRoutes.post('/google-auth', googleAuth);
 userRoutes.get('/verify-token', verifyToken);
 
 // Protected routes - require authentication

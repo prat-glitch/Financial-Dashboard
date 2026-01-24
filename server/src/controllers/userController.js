@@ -1,12 +1,8 @@
 const User = require('../models/usermodel');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
-const { OAuth2Client } = require('google-auth-library');
 
 const JWT_SECRET = process.env.JWT_SECRET || 'expense_tracker_secret_key_2024';
-const GOOGLE_CLIENT_ID = process.env.GOOGLE_CLIENT_ID;
-
-const googleClient = new OAuth2Client(GOOGLE_CLIENT_ID);
 
 // Generate JWT Token
 const generateToken = (userId) => {
@@ -21,7 +17,7 @@ const registerUser = async (req, res) => {
         // Check if user exists
         const existingUser = await User.findOne({ email: email.toLowerCase() });
         if (existingUser) {
-            return res.status(400).json({ message: 'User already exists with this email' });
+            return res.status(400).json({ success: false, message: 'User already exists with this email' });
         }
 
         // Hash password
@@ -32,18 +28,19 @@ const registerUser = async (req, res) => {
         const user = await User.create({
             name,
             email: email.toLowerCase(),
-            Password: hashedPassword,
-            authProvider: 'email'
+            Password: hashedPassword
         });
 
         // Generate token
         const token = generateToken(user._id);
 
         res.status(201).json({
+            success: true,
             message: 'Registration successful',
             token,
             user: {
                 id: user._id,
+                _id: user._id,
                 name: user.name,
                 email: user.email,
                 avatar: user.avatar,
@@ -52,7 +49,7 @@ const registerUser = async (req, res) => {
             }
         });
     } catch (error) {
-        res.status(500).json({ message: 'Registration failed', error: error.message });
+        res.status(500).json({ success: false, message: 'Registration failed', error: error.message });
     }
 };
 
@@ -65,16 +62,9 @@ const loginUser = async (req, res) => {
         const user = await User.findOne({ email: email.toLowerCase(), isDeleted: false });
         if (!user) {
             return res.status(404).json({ 
+                success: false,
                 message: 'No account found with this email. Please sign up first.',
                 code: 'USER_NOT_FOUND'
-            });
-        }
-
-        // Check if user registered with Google
-        if (user.authProvider === 'google' && !user.Password) {
-            return res.status(401).json({ 
-                message: 'This account uses Google sign-in. Please sign in with Google.',
-                code: 'GOOGLE_AUTH_REQUIRED'
             });
         }
 
@@ -82,6 +72,7 @@ const loginUser = async (req, res) => {
         const isMatch = await bcrypt.compare(password, user.Password);
         if (!isMatch) {
             return res.status(401).json({ 
+                success: false,
                 message: 'Invalid credentials. Please check your password.',
                 code: 'INVALID_PASSWORD'
             });
@@ -91,10 +82,12 @@ const loginUser = async (req, res) => {
         const token = generateToken(user._id);
 
         res.json({
+            success: true,
             message: 'Login successful',
             token,
             user: {
                 id: user._id,
+                _id: user._id,
                 name: user.name,
                 email: user.email,
                 avatar: user.avatar,
@@ -103,74 +96,7 @@ const loginUser = async (req, res) => {
             }
         });
     } catch (error) {
-        res.status(500).json({ message: 'Login failed', error: error.message });
-    }
-};
-
-// Google Authentication
-const googleAuth = async (req, res) => {
-    try {
-        const { credential } = req.body;
-
-        if (!credential) {
-            return res.status(400).json({ message: 'No credential provided' });
-        }
-
-        // Verify Google ID token
-        let payload;
-        try {
-            const ticket = await googleClient.verifyIdToken({
-                idToken: credential,
-                audience: GOOGLE_CLIENT_ID,
-            });
-            payload = ticket.getPayload();
-        } catch (error) {
-            console.error('Google token verification failed:', error);
-            return res.status(401).json({ message: 'Invalid Google token' });
-        }
-
-        const { sub: googleId, email, name, picture } = payload;
-
-        // Check if user exists
-        let user = await User.findOne({ email: email.toLowerCase() });
-
-        if (user) {
-            // Update Google ID if not set
-            if (!user.googleId) {
-                user.googleId = googleId;
-                user.authProvider = 'google';
-                if (picture && !user.avatar) user.avatar = picture;
-                await user.save();
-            }
-        } else {
-            // Create new user
-            user = await User.create({
-                name,
-                email: email.toLowerCase(),
-                avatar: picture,
-                googleId,
-                authProvider: 'google'
-            });
-        }
-
-        // Generate token
-        const token = generateToken(user._id);
-
-        res.json({
-            message: 'Google authentication successful',
-            token,
-            user: {
-                id: user._id,
-                name: user.name,
-                email: user.email,
-                avatar: user.avatar,
-                phone: user.phone,
-                preferences: user.preferences
-            }
-        });
-    } catch (error) {
-        console.error('Google authentication error:', error);
-        res.status(500).json({ message: 'Google authentication failed', error: error.message });
+        res.status(500).json({ success: false, message: 'Login failed', error: error.message });
     }
 };
 
@@ -179,19 +105,29 @@ const verifyToken = async (req, res) => {
     try {
         const token = req.headers.authorization?.split(' ')[1];
         if (!token) {
-            return res.status(401).json({ message: 'No token provided' });
+            return res.status(401).json({ success: false, message: 'No token provided' });
         }
 
-        const decoded = jwt.verify(token, JWT_SECRET);
-        const user = await User.findById(decoded.id).select('-Password');
+        let decoded;
+        try {
+            decoded = jwt.verify(token, JWT_SECRET);
+        } catch (jwtError) {
+            return res.status(401).json({ success: false, message: 'Invalid or expired token' });
+        }
+
+        // Handle both 'id' and 'userId' in JWT payload for backwards compatibility
+        const userId = decoded.id || decoded.userId;
+        const user = await User.findById(userId).select('-Password');
 
         if (!user || user.isDeleted) {
-            return res.status(401).json({ message: 'Invalid token' });
+            return res.status(401).json({ success: false, message: 'User not found or deleted' });
         }
 
         res.json({
+            success: true,
             user: {
                 id: user._id,
+                _id: user._id,
                 name: user.name,
                 email: user.email,
                 avatar: user.avatar,
@@ -200,7 +136,8 @@ const verifyToken = async (req, res) => {
             }
         });
     } catch (error) {
-        res.status(401).json({ message: 'Token verification failed' });
+        console.error('Token verification error:', error);
+        res.status(401).json({ success: false, message: 'Token verification failed' });
     }
 };
 
@@ -292,7 +229,6 @@ const deleteAccount = async (req, res) => {
 module.exports = {
     registerUser,
     loginUser,
-    googleAuth,
     verifyToken,
     getUserProfile,
     updateUserProfile,

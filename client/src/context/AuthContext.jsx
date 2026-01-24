@@ -29,23 +29,43 @@ export const AuthProvider = ({ children }) => {
 
                 if (response.ok) {
                     const data = await response.json();
+                    // Normalize user data - ensure both id and _id exist
+                    const normalizedUser = {
+                        ...data.user,
+                        id: data.user.id || data.user._id,
+                        _id: data.user._id || data.user.id
+                    };
                     // Update localStorage with fresh user data from database
-                    localStorage.setItem("expense_track_user", JSON.stringify(data.user));
-                    setCurrentUser(data.user);
+                    localStorage.setItem("expense_track_user", JSON.stringify(normalizedUser));
+                    setCurrentUser(normalizedUser);
                     setIsAuthenticated(true);
                 } else {
                     // Token invalid, clear storage
                     localStorage.removeItem("expense_track_token");
                     localStorage.removeItem("expense_track_user");
                     setIsAuthenticated(false);
+                    setCurrentUser(null);
                 }
             } catch (error) {
                 console.error("Auth verification failed:", error);
                 // Keep existing data if server is unreachable
                 const savedUser = localStorage.getItem("expense_track_user");
                 if (savedUser) {
-                    setCurrentUser(JSON.parse(savedUser));
-                    setIsAuthenticated(true);
+                    try {
+                        const user = JSON.parse(savedUser);
+                        // Normalize user data
+                        const normalizedUser = {
+                            ...user,
+                            id: user.id || user._id,
+                            _id: user._id || user.id
+                        };
+                        setCurrentUser(normalizedUser);
+                        setIsAuthenticated(true);
+                    } catch (e) {
+                        // Invalid JSON, clear storage
+                        localStorage.removeItem("expense_track_user");
+                        localStorage.removeItem("expense_track_token");
+                    }
                 }
             }
             
@@ -56,9 +76,16 @@ export const AuthProvider = ({ children }) => {
     }, []);
 
     const login = (token, user) => {
+        // Normalize user data - ensure both id and _id exist
+        const normalizedUser = {
+            ...user,
+            id: user.id || user._id,
+            _id: user._id || user.id
+        };
+        
         localStorage.setItem("expense_track_token", token);
-        localStorage.setItem("expense_track_user", JSON.stringify(user));
-        setCurrentUser(user);
+        localStorage.setItem("expense_track_user", JSON.stringify(normalizedUser));
+        setCurrentUser(normalizedUser);
         setIsAuthenticated(true);
         
         // Dispatch event to notify UserContext to sync

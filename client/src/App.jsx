@@ -87,7 +87,7 @@ function App() {
     setShowSplash(false);
     setTimeout(() => setAppReady(true), 100);
   };
-
+ 
   // Show splash screen while checking auth
   if (loading || showSplash) {
     return <SplashScreen onComplete={handleSplashComplete} />;

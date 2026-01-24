@@ -1,10 +1,8 @@
 import React, { useState } from "react";
 import { Mail, Lock, Eye, EyeOff, ArrowRight, User } from "lucide-react";
 import { useAuth } from "../context/AuthContext.jsx";
-import { GoogleLogin } from '@react-oauth/google';
 
 // Normalize API URL - remove trailing slash and ensure no double slashes
-// Updated: Jan 21, 2026 - Google Auth fix
 const API_BASE = (import.meta.env.VITE_API_URL || "http://localhost:3000/api").replace(/\/+$/, '');
 
 const Auth = ({ onLogin, isDarkMode }) => {
@@ -68,39 +66,6 @@ const Auth = ({ onLogin, isDarkMode }) => {
     }
   };
 
-  const handleGoogleLogin = async (credentialResponse) => {
-    setLoading(true);
-    setError("");
-    
-    try {
-      const response = await fetch(`${API_BASE}/users/google-auth`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        credentials: "include",
-        body: JSON.stringify({ credential: credentialResponse.credential })
-      });
-
-      const data = await response.json();
-
-      if (response.ok && data.success) {
-        // Use AuthContext login
-        login(data.token, data.user);
-        if (onLogin) onLogin(data.user);
-      } else {
-        setError(data.message || "Google authentication failed");
-      }
-    } catch (err) {
-      console.error('Google login error:', err);
-      setError("Google login failed. Please try again.");
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleGoogleError = () => {
-    setError("Google login failed. Please try again.");
-  };
-
   return (
     <div className={`min-h-screen flex items-center justify-center p-3 sm:p-4 transition-colors duration-300 ${
       isDarkMode 
@@ -143,28 +108,6 @@ const Auth = ({ onLogin, isDarkMode }) => {
               ? 'Welcome back! Please sign in to continue' 
               : 'Start your expense tracking journey'}
           </p>
-        </div>
-
-        {/* Google Button */}
-        <div className="w-full">
-          <GoogleLogin
-            onSuccess={handleGoogleLogin}
-            onError={handleGoogleError}
-            useOneTap
-            theme={isDarkMode ? "filled_black" : "outline"}
-            size="large"
-            text={isLogin ? "signin_with" : "signup_with"}
-            width="100%"
-          />
-        </div>
-
-        {/* Divider */}
-        <div className="flex items-center gap-4 my-6">
-          <div className={`flex-1 h-px ${isDarkMode ? 'bg-slate-700' : 'bg-slate-200'}`} />
-          <span className={`text-sm ${isDarkMode ? 'text-slate-500' : 'text-slate-400'}`}>
-            or sign {isLogin ? 'in' : 'up'} with email
-          </span>
-          <div className={`flex-1 h-px ${isDarkMode ? 'bg-slate-700' : 'bg-slate-200'}`} />
         </div>
 
         {/* Form */}
